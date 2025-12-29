@@ -1,0 +1,17 @@
+# Ignore everything and selectively allow files
+*
+
+!.gitignore
+!README.md
+!LICENSE
+!CODE_OF_CONDUCT.md
+!.zed/*
+!.github/**/*
+
+!flake.lock
+!flake.nix
+!*.nix
+!.envrc
+
+# Recurse through sub-directories applying the same patterns
+!*/
