@@ -1,0 +1,12 @@
+A test application
+
+USAGE
+  myapp [OPTIONS]
+
+FLAGS
+  -h, --help
+          help for myapp
+
+      --visible <VISIBLE>
+          A visible flag
+

@@ -1,0 +1,16 @@
+A test application
+
+USAGE
+  myapp [OPTIONS] [COMMAND]
+
+COMMANDS
+  help    Help about any command
+  sub     A subcommand
+
+FLAGS
+      --debug
+          Enable debug mode
+
+  -h, --help
+          help for myapp
+

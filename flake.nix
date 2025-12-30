@@ -36,7 +36,7 @@
 
         buildInputs = with pkgs; [
           alejandra
-          go-bin.versions."1.24.9"
+          go-bin.versions."1.24.11"
           nil
           typos
         ];

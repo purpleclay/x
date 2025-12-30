@@ -1,0 +1,16 @@
+A test application
+
+USAGE
+  myapp [OPTIONS]
+
+EXAMPLES
+  # Build the project
+  myapp build --output ./dist
+
+  # Initialize a new project
+  myapp init --name myproject
+
+FLAGS
+  -h, --help
+          help for myapp
+
