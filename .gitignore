@@ -13,5 +13,10 @@
 !*.nix
 !.envrc
 
+!go.mod
+!go.sum
+!*.go
+!*.golden
+
 # Recurse through sub-directories applying the same patterns
 !*/
