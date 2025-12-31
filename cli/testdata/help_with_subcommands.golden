@@ -9,7 +9,6 @@ USAGE
   nsv [OPTIONS] [COMMAND]
 
 COMMANDS
-  help       Help about any command
   next       Generate the next semantic version
   tag        Tag the repository with the next semantic version
   version    Print build time version information
