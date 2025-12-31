@@ -109,6 +109,7 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 	cmd.SetErr(o.stderr)
 	cmd.SetHelpFunc(helpFunc(o.theme))
 	cmd.SetUsageFunc(usageFunc(o.theme))
+	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
 	cmd.CompletionOptions.DisableDefaultCmd = true
 
 	return cmd.ExecuteContext(o.ctx)
