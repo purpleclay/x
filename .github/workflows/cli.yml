@@ -1,0 +1,31 @@
+name: cli
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - cli/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - cli/**
+      - .github/workflows/cli.yml
+      - .github/workflows/x-lib.yml
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  x:
+    uses: ./.github/workflows/x-lib.yml
+    with:
+      working-directory: cli
+    secrets:
+      GH_CACHIX: ${{ secrets.GH_CACHIX }}

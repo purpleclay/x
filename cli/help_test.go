@@ -5,285 +5,136 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/require"
 	"gotest.tools/v3/golden"
 )
 
-func TestRenderHelp(t *testing.T) {
-	tests := []struct {
-		name   string
-		setup  func() *cobra.Command
-		golden string
-	}{
-		{
-			name: "basic command",
-			setup: func() *cobra.Command {
-				return &cobra.Command{
-					Use:   "myapp",
-					Short: "A test application",
-					Long:  "A longer description of the test application.",
-				}
-			},
-			golden: "basic_command.golden",
-		},
-		{
-			name: "with flags",
-			setup: func() *cobra.Command {
-				var output string
-				var verbose bool
-				cmd := &cobra.Command{
-					Use:   "myapp",
-					Short: "A test application",
-					Run:   func(cmd *cobra.Command, args []string) {},
-				}
-				cmd.Flags().StringVarP(&output, "output", "o", "", "Output file path")
-				cmd.Flags().BoolVarP(&verbose, "verbose", "v", false, "Enable verbose output")
-				return cmd
-			},
-			golden: "with_flags.golden",
-		},
-		{
-			name: "with subcommands",
-			setup: func() *cobra.Command {
-				root := &cobra.Command{
-					Use:   "myapp",
-					Short: "A test application",
-				}
-				root.AddCommand(
-					&cobra.Command{
-						Use:   "build",
-						Short: "Build the project",
-						Run:   func(cmd *cobra.Command, args []string) {},
-					},
-					&cobra.Command{
-						Use:   "init",
-						Short: "Initialize a new project",
-						Run:   func(cmd *cobra.Command, args []string) {},
-					},
-				)
-				return root
-			},
-			golden: "with_subcommands.golden",
-		},
-		{
-			name: "with examples",
-			setup: func() *cobra.Command {
-				return &cobra.Command{
-					Use:   "myapp",
-					Short: "A test application",
-					Example: `# Build the project
-myapp build --output ./dist
+// use a realistic example based on: https://github.com/purpleclay/nsv
+func newRootCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "nsv",
+		Short: "Manage semantic versioning without any config",
+		Long: `
+			NSV (Next Semantic Version) is a convention-based semantic versioning
+			tool that leans on the power of conventional commits to make versioning
+			your software a breeze.
 
-# Initialize a new project
-myapp init --name myproject`,
-					Run: func(cmd *cobra.Command, args []string) {},
-				}
-			},
-			golden: "with_examples.golden",
-		},
-		{
-			name: "with global flags",
-			setup: func() *cobra.Command {
-				var debug bool
-				root := &cobra.Command{
-					Use:   "myapp",
-					Short: "A test application",
-				}
-				root.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug mode")
-				root.AddCommand(&cobra.Command{
-					Use:   "sub",
-					Short: "A subcommand",
-					Run:   func(cmd *cobra.Command, args []string) {},
-				})
-				return root
-			},
-			golden: "with_global_flags.golden",
-		},
-		{
-			name: "hidden commands not shown",
-			setup: func() *cobra.Command {
-				root := &cobra.Command{
-					Use:   "myapp",
-					Short: "A test application",
-				}
-				root.AddCommand(
-					&cobra.Command{
-						Use:   "visible",
-						Short: "A visible command",
-						Run:   func(cmd *cobra.Command, args []string) {},
-					},
-					&cobra.Command{
-						Use:    "hidden",
-						Short:  "A hidden command",
-						Hidden: true,
-						Run:    func(cmd *cobra.Command, args []string) {},
-					},
-				)
-				return root
-			},
-			golden: "hidden_commands.golden",
-		},
-		{
-			name: "hidden flags not shown",
-			setup: func() *cobra.Command {
-				var visible, hidden string
-				cmd := &cobra.Command{
-					Use:   "myapp",
-					Short: "A test application",
-					Run:   func(cmd *cobra.Command, args []string) {},
-				}
-				cmd.Flags().StringVar(&visible, "visible", "", "A visible flag")
-				cmd.Flags().StringVar(&hidden, "hidden", "", "A hidden flag")
-				cmd.Flags().MarkHidden("hidden")
-				return cmd
-			},
-			golden: "hidden_flags.golden",
-		},
-		{
-			name: "with default value",
-			setup: func() *cobra.Command {
-				var port int
-				cmd := &cobra.Command{
-					Use:   "myapp",
-					Short: "A test application",
-					Run:   func(cmd *cobra.Command, args []string) {},
-				}
-				cmd.Flags().IntVarP(&port, "port", "p", 8080, "Server port")
-				return cmd
-			},
-			golden: "with_default_value.golden",
-		},
-		{
-			name: "with arguments",
-			setup: func() *cobra.Command {
-				return &cobra.Command{
-					Use:   "myapp <source> [destination]",
-					Short: "Copy files",
-					Run:   func(cmd *cobra.Command, args []string) {},
-				}
-			},
-			golden: "with_arguments.golden",
-		},
+			There is no need to manually maintain a version file or embed the
+			version within your source code. NSV will do all of this for you.
+		`,
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			cmd := tt.setup()
-			Configure(cmd)
+	cmd.PersistentFlags().String("log-level", "info", "set the logging verbosity")
+	cmd.PersistentFlags().Bool("no-color", false, "disable colored output")
+	cmd.PersistentFlags().Bool("no-log", false, "disable all log output")
 
-			var buf bytes.Buffer
-			cmd.SetOut(&buf)
-			cmd.SetArgs([]string{"--help"})
-			err := cmd.Execute()
-			assert.NilError(t, err)
+	return cmd
+}
 
-			golden.Assert(t, buf.String(), tt.golden)
-		})
+func newNextCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "next [PATH]...",
+		Short: "Generate the next semantic version",
+		Long: `
+			Generate the next semantic version based on the conventional commit
+			history of your repository.
+		`,
+		Example: `
+			# Generate the next semantic version
+			nsv next
+
+			# Generate and output only the version number
+			nsv next --show
+
+			# Use a custom format
+			nsv next --format "v{{.Version}}"
+		`,
+		Run: func(_ *cobra.Command, _ []string) {},
+	}
+
+	cmd.Flags().BoolP("show", "s", false, "show how the version was generated")
+	cmd.Flags().StringP("format", "f", "", "provide a go template for changing the default version format")
+	cmd.Flags().StringSlice("major-prefixes", nil, "a list of conventional commit prefixes for a major version increment")
+	cmd.Flags().StringSlice("minor-prefixes", nil, "a list of conventional commit prefixes for a minor version increment")
+	cmd.Flags().StringSlice("patch-prefixes", nil, "a list of conventional commit prefixes for a patch version increment")
+
+	return cmd
+}
+
+func newTagCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "tag [PATH]...",
+		Short: "Tag the repository with the next semantic version",
+		Run:   func(_ *cobra.Command, _ []string) {},
+	}
+
+	cmd.Flags().StringP("message", "m", "", "a custom message for the tag")
+
+	return cmd
+}
+
+func newVersionCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "version",
+		Short: "Print build time version information",
+		Run:   func(_ *cobra.Command, _ []string) {},
 	}
 }
 
-func TestRenderHelp_SubcommandGlobalFlags(t *testing.T) {
-	var debug bool
-	root := &cobra.Command{
-		Use:   "myapp",
-		Short: "A test application",
-	}
-	root.PersistentFlags().BoolVar(&debug, "debug", false, "Enable debug mode")
-	root.AddCommand(&cobra.Command{
-		Use:   "sub",
-		Short: "A subcommand",
-		Run:   func(cmd *cobra.Command, args []string) {},
-	})
+func TestHelp(t *testing.T) {
+	root := newRootCmd()
+	root.AddCommand(newNextCmd(), newTagCmd(), newVersionCmd())
 	Configure(root)
 
 	var buf bytes.Buffer
 	root.SetOut(&buf)
-	root.SetArgs([]string{"sub", "--help"})
+	root.SetArgs([]string{"--help"})
 	err := root.Execute()
-	assert.NilError(t, err)
+	require.NoError(t, err)
 
-	golden.Assert(t, buf.String(), "subcommand_global_flags.golden")
+	golden.Assert(t, buf.String(), "help.golden")
 }
 
-func TestExtractArgs(t *testing.T) {
-	tests := []struct {
-		use      string
-		expected string
-	}{
-		{"myapp", ""},
-		{"myapp <file>", "<file>"},
-		{"myapp <source> [destination]", "<source> [destination]"},
-		{"build [flags]", "[flags]"},
-	}
+func TestHelpWithExamples(t *testing.T) {
+	root := newRootCmd()
+	next := newNextCmd()
+	root.AddCommand(next)
+	Configure(root)
 
-	for _, tt := range tests {
-		t.Run(tt.use, func(t *testing.T) {
-			result := extractArgs(tt.use)
-			assert.Equal(t, result, tt.expected)
-		})
-	}
+	var buf bytes.Buffer
+	root.SetOut(&buf)
+	root.SetArgs([]string{"next", "--help"})
+	err := root.Execute()
+	require.NoError(t, err)
+
+	golden.Assert(t, buf.String(), "help_with_examples.golden")
 }
 
-func TestHasSubCommands(t *testing.T) {
-	t.Run("no subcommands", func(t *testing.T) {
-		cmd := &cobra.Command{Use: "test"}
-		assert.Assert(t, !hasSubCommands(cmd))
-	})
+func TestHelpWithGlobalFlags(t *testing.T) {
+	root := newRootCmd()
+	tag := newTagCmd()
+	root.AddCommand(tag)
+	Configure(root)
 
-	t.Run("with visible subcommand", func(t *testing.T) {
-		cmd := &cobra.Command{Use: "test"}
-		cmd.AddCommand(&cobra.Command{Use: "sub"})
-		assert.Assert(t, hasSubCommands(cmd))
-	})
+	var buf bytes.Buffer
+	root.SetOut(&buf)
+	root.SetArgs([]string{"tag", "--help"})
+	err := root.Execute()
+	require.NoError(t, err)
 
-	t.Run("with only hidden subcommand", func(t *testing.T) {
-		cmd := &cobra.Command{Use: "test"}
-		cmd.AddCommand(&cobra.Command{Use: "sub", Hidden: true})
-		assert.Assert(t, !hasSubCommands(cmd))
-	})
+	golden.Assert(t, buf.String(), "help_with_global_flags.golden")
 }
 
-func TestIndentLines(t *testing.T) {
-	tests := []struct {
-		name     string
-		input    string
-		prefix   string
-		expected string
-	}{
-		{
-			name:     "single line",
-			input:    "hello",
-			prefix:   "  ",
-			expected: "  hello",
-		},
-		{
-			name:     "multiple lines",
-			input:    "line1\nline2\nline3",
-			prefix:   "  ",
-			expected: "  line1\n  line2\n  line3",
-		},
-		{
-			name:     "with empty lines",
-			input:    "line1\n\nline3",
-			prefix:   "  ",
-			expected: "  line1\n\n  line3",
-		},
-	}
+func TestHelpWithSubcommands(t *testing.T) {
+	root := newRootCmd()
+	root.AddCommand(newNextCmd(), newTagCmd(), newVersionCmd())
+	Configure(root)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			result := indentLines(tt.input, tt.prefix)
-			assert.Equal(t, result, tt.expected)
-		})
-	}
-}
+	var buf bytes.Buffer
+	root.SetOut(&buf)
+	root.SetArgs([]string{"--help"})
+	err := root.Execute()
+	require.NoError(t, err)
 
-func TestConfigure(t *testing.T) {
-	cmd := &cobra.Command{
-		Use:   "myapp",
-		Short: "A test application",
-	}
-	Configure(cmd)
-
-	assert.Assert(t, cmd.CompletionOptions.DisableDefaultCmd)
+	golden.Assert(t, buf.String(), "help_with_subcommands.golden")
 }

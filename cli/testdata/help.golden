@@ -1,0 +1,30 @@
+NSV (Next Semantic Version) is a convention-based semantic versioning
+tool that leans on the power of conventional commits to make versioning
+your software a breeze.
+
+There is no need to manually maintain a version file or embed the
+version within your source code. NSV will do all of this for you.
+
+USAGE
+  nsv [OPTIONS] [COMMAND]
+
+COMMANDS
+  help       Help about any command
+  next       Generate the next semantic version
+  tag        Tag the repository with the next semantic version
+  version    Print build time version information
+
+FLAGS
+  -h, --help
+          help for nsv
+
+      --log-level <LOG-LEVEL>
+          set the logging verbosity
+
+          [default: info]
+
+      --no-color
+          disable colored output
+
+      --no-log
+          disable all log output
