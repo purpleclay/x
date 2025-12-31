@@ -1,15 +1,101 @@
 package cli
 
 import (
+	"context"
+	"io"
+	"os"
+
 	"github.com/spf13/cobra"
 )
 
-// Configure applies the custom help and usage templates to a cobra command.
-// This should be called on the root command before Execute.
-func Configure(cmd *cobra.Command) {
+// Option is a functional option for configuring the CLI.
+type Option func(*options)
+
+type options struct {
+	ctx    context.Context
+	stdout io.Writer
+	stderr io.Writer
+}
+
+func defaultOptions() *options {
+	return &options{
+		ctx:    context.Background(),
+		stdout: os.Stdout,
+		stderr: os.Stderr,
+	}
+}
+
+// WithStdout sets the standard output writer for the CLI.
+//
+//	var buf strings.Builder
+//	cli.Execute(root, cli.WithStdout(&buf))
+//	fmt.Print(buf.String())
+func WithStdout(w io.Writer) Option {
+	return func(o *options) {
+		o.stdout = w
+	}
+}
+
+// WithStderr sets the standard error writer for the CLI.
+//
+//	var buf strings.Builder
+//	cli.Execute(root, cli.WithStderr(&buf))
+//	fmt.Print(buf.String())
+func WithStderr(w io.Writer) Option {
+	return func(o *options) {
+		o.stderr = w
+	}
+}
+
+// WithContext sets the context for the CLI, enabling cancellation
+// and passing request-scoped values.
+//
+//	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
+//	defer cancel()
+//
+//	cli.Execute(root, cli.WithContext(ctx))
+func WithContext(ctx context.Context) Option {
+	return func(o *options) {
+		o.ctx = ctx
+	}
+}
+
+// Execute runs the provided cobra command with custom help rendering
+// and sensible defaults. Options can be provided to customise behavior.
+//
+// Basic usage:
+//
+//	root := &cobra.Command{
+//	    Use:   "myapp",
+//	    Short: "A brief description",
+//	    Long: `
+//	        A longer description that spans multiple lines.
+//	        Indentation is automatically removed.
+//	    `,
+//	}
+//
+//	if err := cli.Execute(root); err != nil {
+//	    os.Exit(1)
+//	}
+//
+// Functional options allow customisation:
+//
+//	cli.Execute(root,
+//	    cli.WithContext(ctx),
+//	    cli.WithStdout(os.Stdout),
+//	    cli.WithStderr(os.Stderr),
+//	)
+func Execute(cmd *cobra.Command, opts ...Option) error {
+	o := defaultOptions()
+	for _, opt := range opts {
+		opt(o)
+	}
+
+	cmd.SetOut(o.stdout)
+	cmd.SetErr(o.stderr)
 	cmd.SetHelpFunc(helpFunc())
 	cmd.SetUsageFunc(usageFunc())
-
-	// Disable the default completion command
 	cmd.CompletionOptions.DisableDefaultCmd = true
+
+	return cmd.ExecuteContext(o.ctx)
 }

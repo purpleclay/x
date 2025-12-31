@@ -82,58 +82,52 @@ func newVersionCmd() *cobra.Command {
 }
 
 func TestHelp(t *testing.T) {
+	var buf bytes.Buffer
+
 	root := newRootCmd()
 	root.AddCommand(newNextCmd(), newTagCmd(), newVersionCmd())
-	Configure(root)
-
-	var buf bytes.Buffer
-	root.SetOut(&buf)
 	root.SetArgs([]string{"--help"})
-	err := root.Execute()
+
+	err := Execute(root, WithStdout(&buf))
 	require.NoError(t, err)
 
 	golden.Assert(t, buf.String(), "help.golden")
 }
 
 func TestHelpWithExamples(t *testing.T) {
-	root := newRootCmd()
-	next := newNextCmd()
-	root.AddCommand(next)
-	Configure(root)
-
 	var buf bytes.Buffer
-	root.SetOut(&buf)
+
+	root := newRootCmd()
+	root.AddCommand(newNextCmd())
 	root.SetArgs([]string{"next", "--help"})
-	err := root.Execute()
+
+	err := Execute(root, WithStdout(&buf))
 	require.NoError(t, err)
 
 	golden.Assert(t, buf.String(), "help_with_examples.golden")
 }
 
 func TestHelpWithGlobalFlags(t *testing.T) {
-	root := newRootCmd()
-	tag := newTagCmd()
-	root.AddCommand(tag)
-	Configure(root)
-
 	var buf bytes.Buffer
-	root.SetOut(&buf)
+
+	root := newRootCmd()
+	root.AddCommand(newTagCmd())
 	root.SetArgs([]string{"tag", "--help"})
-	err := root.Execute()
+
+	err := Execute(root, WithStdout(&buf))
 	require.NoError(t, err)
 
 	golden.Assert(t, buf.String(), "help_with_global_flags.golden")
 }
 
 func TestHelpWithSubcommands(t *testing.T) {
+	var buf bytes.Buffer
+
 	root := newRootCmd()
 	root.AddCommand(newNextCmd(), newTagCmd(), newVersionCmd())
-	Configure(root)
-
-	var buf bytes.Buffer
-	root.SetOut(&buf)
 	root.SetArgs([]string{"--help"})
-	err := root.Execute()
+
+	err := Execute(root, WithStdout(&buf))
 	require.NoError(t, err)
 
 	golden.Assert(t, buf.String(), "help_with_subcommands.golden")
