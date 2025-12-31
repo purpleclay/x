@@ -9,20 +9,20 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func helpFunc() func(*cobra.Command, []string) {
+func helpFunc(theme Theme) func(*cobra.Command, []string) {
 	return func(cmd *cobra.Command, _ []string) {
-		renderHelp(cmd.OutOrStdout(), cmd)
+		renderHelp(cmd.OutOrStdout(), cmd, theme)
 	}
 }
 
-func usageFunc() func(*cobra.Command) error {
+func usageFunc(theme Theme) func(*cobra.Command) error {
 	return func(cmd *cobra.Command) error {
-		renderHelp(cmd.OutOrStderr(), cmd)
+		renderHelp(cmd.OutOrStderr(), cmd, theme)
 		return nil
 	}
 }
 
-func renderHelp(w io.Writer, cmd *cobra.Command) {
+func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme) {
 	if desc := cmd.Long; desc != "" {
 		fmt.Fprintln(w, dedent(desc))
 		fmt.Fprintln(w)
@@ -31,31 +31,31 @@ func renderHelp(w io.Writer, cmd *cobra.Command) {
 		fmt.Fprintln(w)
 	}
 
-	fmt.Fprintln(w, "USAGE")
+	fmt.Fprintln(w, theme.Header.Render("USAGE"))
 	fmt.Fprintf(w, "  %s\n", formatUsage(cmd))
 
 	if hasSubCommands(cmd) {
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "COMMANDS")
-		renderCommands(w, cmd)
+		fmt.Fprintln(w, theme.Header.Render("COMMANDS"))
+		renderCommands(w, cmd, theme)
 	}
 
 	if cmd.Example != "" {
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "EXAMPLES")
+		fmt.Fprintln(w, theme.Header.Render("EXAMPLES"))
 		fmt.Fprintf(w, "%s\n", indentLines(dedent(cmd.Example), "  "))
 	}
 
 	if cmd.HasAvailableLocalFlags() {
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "FLAGS")
-		renderFlags(w, cmd.LocalFlags())
+		fmt.Fprintln(w, theme.Header.Render("FLAGS"))
+		renderFlags(w, cmd.LocalFlags(), theme)
 	}
 
 	if cmd.HasAvailableInheritedFlags() {
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, "GLOBAL FLAGS")
-		renderFlags(w, cmd.InheritedFlags())
+		fmt.Fprintln(w, theme.Header.Render("GLOBAL FLAGS"))
+		renderFlags(w, cmd.InheritedFlags(), theme)
 	}
 }
 
@@ -96,7 +96,7 @@ func hasSubCommands(cmd *cobra.Command) bool {
 	return false
 }
 
-func renderCommands(w io.Writer, cmd *cobra.Command) {
+func renderCommands(w io.Writer, cmd *cobra.Command, theme Theme) {
 	maxLen := 0
 	for _, sub := range cmd.Commands() {
 		if !sub.Hidden && len(sub.Name()) > maxLen {
@@ -109,11 +109,13 @@ func renderCommands(w io.Writer, cmd *cobra.Command) {
 			continue
 		}
 		padding := strings.Repeat(" ", maxLen-len(sub.Name())+4)
-		fmt.Fprintf(w, "  %s%s%s\n", sub.Name(), padding, sub.Short)
+		name := theme.Command.Render(sub.Name())
+		desc := theme.Description.Render(sub.Short)
+		fmt.Fprintf(w, "  %s%s%s\n", name, padding, desc)
 	}
 }
 
-func renderFlags(w io.Writer, flags *pflag.FlagSet) {
+func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme) {
 	first := true
 	flags.VisitAll(func(f *pflag.Flag) {
 		if f.Hidden {
@@ -133,14 +135,14 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet) {
 		}
 
 		if f.Value.Type() != "bool" {
-			flagStr += fmt.Sprintf(" <%s>", strings.ToUpper(f.Name))
+			flagStr += " " + theme.FlagArg.Render(fmt.Sprintf("<%s>", strings.ToUpper(f.Name)))
 		}
 
-		fmt.Fprintf(w, "  %s\n", flagStr)
-		fmt.Fprintf(w, "          %s\n", f.Usage)
+		fmt.Fprintf(w, "  %s\n", theme.Flag.Render(flagStr))
+		fmt.Fprintf(w, "          %s\n", theme.Description.Render(f.Usage))
 
 		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && f.DefValue != "[]" {
-			fmt.Fprintf(w, "\n          [default: %s]\n", f.DefValue)
+			fmt.Fprintf(w, "\n          %s\n", theme.FlagDefault.Render(fmt.Sprintf("[default: %s]", f.DefValue)))
 		}
 	})
 }
