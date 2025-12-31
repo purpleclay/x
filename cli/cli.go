@@ -15,6 +15,7 @@ type options struct {
 	ctx    context.Context
 	stdout io.Writer
 	stderr io.Writer
+	theme  Theme
 }
 
 func defaultOptions() *options {
@@ -22,6 +23,7 @@ func defaultOptions() *options {
 		ctx:    context.Background(),
 		stdout: os.Stdout,
 		stderr: os.Stderr,
+		theme:  DefaultTheme(),
 	}
 }
 
@@ -60,6 +62,18 @@ func WithContext(ctx context.Context) Option {
 	}
 }
 
+// WithTheme sets the theme for styling the CLI help output.
+//
+//	theme := cli.DefaultTheme()
+//	theme.Header = lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("141"))
+//
+//	cli.Execute(root, cli.WithTheme(theme))
+func WithTheme(t Theme) Option {
+	return func(o *options) {
+		o.theme = t
+	}
+}
+
 // Execute runs the provided cobra command with custom help rendering
 // and sensible defaults. Options can be provided to customise behavior.
 //
@@ -93,8 +107,8 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 
 	cmd.SetOut(o.stdout)
 	cmd.SetErr(o.stderr)
-	cmd.SetHelpFunc(helpFunc())
-	cmd.SetUsageFunc(usageFunc())
+	cmd.SetHelpFunc(helpFunc(o.theme))
+	cmd.SetUsageFunc(usageFunc(o.theme))
 	cmd.CompletionOptions.DisableDefaultCmd = true
 
 	return cmd.ExecuteContext(o.ctx)
