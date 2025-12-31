@@ -1,0 +1,23 @@
+Tag the repository with the next semantic version
+
+USAGE
+  nsv tag [OPTIONS] [PATH]...
+
+FLAGS
+  -h, --help
+          help for tag
+
+  -m, --message <MESSAGE>
+          a custom message for the tag
+
+GLOBAL FLAGS
+      --log-level <LOG-LEVEL>
+          set the logging verbosity
+
+          [default: info]
+
+      --no-color
+          disable colored output
+
+      --no-log
+          disable all log output

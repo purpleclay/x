@@ -10,7 +10,7 @@ import (
 )
 
 func helpFunc() func(*cobra.Command, []string) {
-	return func(cmd *cobra.Command, args []string) {
+	return func(cmd *cobra.Command, _ []string) {
 		renderHelp(cmd.OutOrStdout(), cmd)
 	}
 }
@@ -24,10 +24,10 @@ func usageFunc() func(*cobra.Command) error {
 
 func renderHelp(w io.Writer, cmd *cobra.Command) {
 	if desc := cmd.Long; desc != "" {
-		fmt.Fprintln(w, desc)
+		fmt.Fprintln(w, dedent(desc))
 		fmt.Fprintln(w)
 	} else if desc := cmd.Short; desc != "" {
-		fmt.Fprintln(w, desc)
+		fmt.Fprintln(w, dedent(desc))
 		fmt.Fprintln(w)
 	}
 
@@ -43,7 +43,7 @@ func renderHelp(w io.Writer, cmd *cobra.Command) {
 	if cmd.Example != "" {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, "EXAMPLES")
-		fmt.Fprintf(w, "%s\n", indentLines(strings.TrimSpace(cmd.Example), "  "))
+		fmt.Fprintf(w, "%s\n", indentLines(dedent(cmd.Example), "  "))
 	}
 
 	if cmd.HasAvailableLocalFlags() {
@@ -114,10 +114,16 @@ func renderCommands(w io.Writer, cmd *cobra.Command) {
 }
 
 func renderFlags(w io.Writer, flags *pflag.FlagSet) {
+	first := true
 	flags.VisitAll(func(f *pflag.Flag) {
 		if f.Hidden {
 			return
 		}
+
+		if !first {
+			fmt.Fprintln(w)
+		}
+		first = false
 
 		var flagStr string
 		if f.Shorthand != "" {
@@ -136,8 +142,6 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet) {
 		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && f.DefValue != "[]" {
 			fmt.Fprintf(w, "\n          [default: %s]\n", f.DefValue)
 		}
-
-		fmt.Fprintln(w)
 	})
 }
 

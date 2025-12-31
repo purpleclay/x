@@ -1,9 +1,0 @@
-Copy files
-
-USAGE
-  myapp [OPTIONS] <source> [destination]
-
-FLAGS
-  -h, --help
-          help for myapp
-

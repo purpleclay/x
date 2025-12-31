@@ -17,6 +17,7 @@
 !go.sum
 !*.go
 !*.golden
+!.golangci.yaml
 
 # Recurse through sub-directories applying the same patterns
 !*/

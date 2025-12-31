@@ -1,0 +1,46 @@
+Generate the next semantic version based on the conventional commit
+history of your repository.
+
+USAGE
+  nsv next [OPTIONS] [PATH]...
+
+EXAMPLES
+  # Generate the next semantic version
+  nsv next
+
+  # Generate and output only the version number
+  nsv next --show
+
+  # Use a custom format
+  nsv next --format "v{{.Version}}"
+
+FLAGS
+  -f, --format <FORMAT>
+          provide a go template for changing the default version format
+
+  -h, --help
+          help for next
+
+      --major-prefixes <MAJOR-PREFIXES>
+          a list of conventional commit prefixes for a major version increment
+
+      --minor-prefixes <MINOR-PREFIXES>
+          a list of conventional commit prefixes for a minor version increment
+
+      --patch-prefixes <PATCH-PREFIXES>
+          a list of conventional commit prefixes for a patch version increment
+
+  -s, --show
+          show how the version was generated
+
+GLOBAL FLAGS
+      --log-level <LOG-LEVEL>
+          set the logging verbosity
+
+          [default: info]
+
+      --no-color
+          disable colored output
+
+      --no-log
+          disable all log output
