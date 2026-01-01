@@ -22,9 +22,6 @@ var (
 
 	// FlagDefaultText styles default value indicators.
 	FlagDefaultText = lipgloss.AdaptiveColor{Light: string(Purple500), Dark: string(Purple100)}
-
-	// HeaderBackground styles section header backgrounds.
-	HeaderBackground = lipgloss.AdaptiveColor{Light: string(Purple600), Dark: string(Purple400)}
 )
 
 // PurpleClayCLI returns the official PurpleClay CLI theme. Colors adapt
@@ -42,12 +39,12 @@ var (
 //	}
 func PurpleClayCLI() cli.Theme {
 	return cli.Theme{
-		Command:     lipgloss.NewStyle().Foreground(CommandText).Bold(true),
+		Command:     Bold.Foreground(CommandText),
 		Comment:     lipgloss.NewStyle().Foreground(CommentText),
 		Description: lipgloss.NewStyle(),
-		Flag:        lipgloss.NewStyle().Foreground(FlagText).Bold(true),
+		Flag:        Bold.Foreground(FlagText),
 		FlagArg:     lipgloss.NewStyle().Foreground(FlagArgText),
 		FlagDefault: lipgloss.NewStyle().Foreground(FlagDefaultText),
-		Header:      lipgloss.NewStyle().Background(HeaderBackground).Foreground(BrightWhite).Bold(true).Padding(0, 1).MarginBottom(1),
+		Header:      H5.MarginBottom(1),
 	}
 }
