@@ -6,7 +6,7 @@ There is no need to manually maintain a version file or embed the
 version within your source code. NSV will do all of this for you.
 
 USAGE
-  nsv [OPTIONS] [COMMAND]
+  nsv [FLAGS] [COMMAND]
 
 COMMANDS
   next       Generate the next semantic version
