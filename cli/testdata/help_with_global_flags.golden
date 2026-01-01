@@ -1,7 +1,7 @@
 Tag the repository with the next semantic version
 
 USAGE
-  nsv tag [OPTIONS] [PATH]...
+  nsv tag [FLAGS] [PATH]...
 
 FLAGS
   -h, --help

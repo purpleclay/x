@@ -2,7 +2,7 @@ Generate the next semantic version based on the conventional commit
 history of your repository.
 
 USAGE
-  nsv next [OPTIONS] [PATH]...
+  nsv next [FLAGS] [PATH]...
 
 EXAMPLES
   # Generate the next semantic version

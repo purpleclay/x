@@ -43,7 +43,7 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme) {
 	if cmd.Example != "" {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render("EXAMPLES"))
-		fmt.Fprintf(w, "%s\n", indentLines(dedent(cmd.Example), "  "))
+		renderExamples(w, dedent(cmd.Example), theme)
 	}
 
 	if cmd.HasAvailableLocalFlags() {
@@ -65,7 +65,7 @@ func formatUsage(cmd *cobra.Command) string {
 	parts = append(parts, cmd.CommandPath())
 
 	if cmd.HasAvailableFlags() {
-		parts = append(parts, "[OPTIONS]")
+		parts = append(parts, "[FLAGS]")
 	}
 
 	if args := extractArgs(cmd.Use); args != "" {
@@ -147,12 +147,16 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme) {
 	})
 }
 
-func indentLines(s, prefix string) string {
-	lines := strings.Split(s, "\n")
-	for i, line := range lines {
-		if line != "" {
-			lines[i] = prefix + line
+func renderExamples(w io.Writer, s string, theme Theme) {
+	for line := range strings.SplitSeq(s, "\n") {
+		if line == "" {
+			fmt.Fprintln(w)
+			continue
+		}
+		if strings.HasPrefix(strings.TrimSpace(line), "#") {
+			fmt.Fprintf(w, "  %s\n", theme.Comment.Render(line))
+		} else {
+			fmt.Fprintf(w, "  %s\n", line)
 		}
 	}
-	return strings.Join(lines, "\n")
 }
