@@ -18,6 +18,7 @@
 !*.go
 !*.golden
 !.golangci.yaml
+!govendor.toml
 
 # Recurse through sub-directories applying the same patterns
 !*/
