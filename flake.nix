@@ -39,6 +39,7 @@
           go-bin.versions."1.24.11"
           gofumpt
           golangci-lint
+          go-overlay.packages.${system}.govendor
           nil
           typos
         ];
@@ -64,6 +65,13 @@
         with pkgs; {
           checks = {
             inherit pre-commit-check;
+          };
+
+          packages = {
+            theme = callPackage ./default.nix {
+              inherit buildGoWorkspace;
+              go = go-bin.fromGoMod ./theme/go.mod;
+            };
           };
 
           devShells.default = mkShell {

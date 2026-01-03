@@ -3,7 +3,7 @@ package theme
 import "github.com/charmbracelet/lipgloss"
 
 // Base header style with padding, bold, and white foreground.
-var header = lipgloss.NewStyle().Padding(0, 1).Bold(true).Foreground(lipgloss.Color("#ffffff"))
+var header = lipgloss.NewStyle().Padding(0, 3).Bold(true).Foreground(lipgloss.Color("#ffffff"))
 
 // Header styles ranked by importance from H1 (most) to H6 (least).
 // Each header uses progressively darker background shades and
