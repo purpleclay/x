@@ -43,7 +43,7 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 	if cmd.Example != "" {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render("EXAMPLES"))
-		renderExamples(w, dedent(cmd.Example), theme)
+		renderExamples(w, dedent(cmd.Example), cmd, theme)
 	}
 
 	if cmd.HasAvailableLocalFlags() {
@@ -201,7 +201,16 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 	})
 }
 
-func renderExamples(w io.Writer, s string, theme Theme) {
+func renderExamples(w io.Writer, s string, cmd *cobra.Command, theme Theme) {
+	// Build set of known subcommand names
+	subcommands := make(map[string]bool)
+	root := cmd.Root()
+	for _, c := range root.Commands() {
+		if !c.Hidden {
+			subcommands[c.Name()] = true
+		}
+	}
+
 	for line := range strings.SplitSeq(s, "\n") {
 		if line == "" {
 			fmt.Fprintln(w)
@@ -210,7 +219,71 @@ func renderExamples(w io.Writer, s string, theme Theme) {
 		if strings.HasPrefix(strings.TrimSpace(line), "#") {
 			fmt.Fprintf(w, "  %s\n", theme.Comment.Render(line))
 		} else {
-			fmt.Fprintf(w, "  %s\n", line)
+			styled := styleExampleLine(line, root.Name(), subcommands, theme)
+			fmt.Fprintf(w, "  %s\n", styled)
 		}
 	}
+}
+
+func styleExampleLine(line, rootCmd string, subcommands map[string]bool, theme Theme) string {
+	tokens := tokenizeExample(line)
+	var result strings.Builder
+
+	for i, token := range tokens {
+		if token.isWhitespace {
+			result.WriteString(token.value)
+			continue
+		}
+
+		switch {
+		case i == 0 && token.value == rootCmd:
+			// Root command
+			result.WriteString(theme.Command.Render(token.value))
+		case subcommands[token.value]:
+			// Known subcommand
+			result.WriteString(theme.Command.Render(token.value))
+		case strings.HasPrefix(token.value, "-"):
+			if idx := strings.Index(token.value, "="); idx != -1 {
+				flag := token.value[:idx+1]
+				value := token.value[idx+1:]
+				result.WriteString(theme.Flag.Render(flag))
+				result.WriteString(value)
+			} else {
+				result.WriteString(theme.Flag.Render(token.value))
+			}
+		default:
+			result.WriteString(token.value)
+		}
+	}
+
+	return result.String()
+}
+
+type exampleToken struct {
+	value        string
+	isWhitespace bool
+}
+
+func tokenizeExample(line string) []exampleToken {
+	var tokens []exampleToken
+	var current strings.Builder
+	inWhitespace := false
+
+	for _, r := range line {
+		isSpace := r == ' ' || r == '\t'
+		if isSpace != inWhitespace {
+			if current.Len() > 0 {
+				tokens = append(tokens, exampleToken{value: current.String(), isWhitespace: inWhitespace})
+				current.Reset()
+			}
+			inWhitespace = isSpace
+		}
+		current.WriteRune(r)
+	}
+
+	if current.Len() > 0 {
+		tokens = append(tokens, exampleToken{value: current.String(), isWhitespace: inWhitespace})
+	}
+
+	return tokens
 }
