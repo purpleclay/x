@@ -18,7 +18,7 @@ FLAGS
   -h, --help
           help for nsv
 
-      --log-level <LOG-LEVEL>
+      --log-level <string>
           set the logging verbosity
 
           [default: info]

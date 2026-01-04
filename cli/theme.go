@@ -18,9 +18,9 @@ type Theme struct {
 	// (e.g., -v, --verbose).
 	Flag lipgloss.Style
 
-	// FlagArg styles the argument placeholder for flags that accept values
-	// (e.g., <FILE> in --config <FILE>).
-	FlagArg lipgloss.Style
+	// FlagType styles the type hint for flags that accept values
+	// (e.g., <string> in --config <string>).
+	FlagType lipgloss.Style
 
 	// FlagDefault styles the default value indicator shown beneath flags
 	// (e.g., [default: 8080]).
@@ -38,7 +38,7 @@ func DefaultTheme() Theme {
 		Comment:     lipgloss.NewStyle(),
 		Description: lipgloss.NewStyle(),
 		Flag:        lipgloss.NewStyle(),
-		FlagArg:     lipgloss.NewStyle(),
+		FlagType:    lipgloss.NewStyle(),
 		FlagDefault: lipgloss.NewStyle(),
 		Header:      lipgloss.NewStyle(),
 	}
