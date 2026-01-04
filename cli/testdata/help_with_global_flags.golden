@@ -1,4 +1,4 @@
-Tag the repository with the next semantic version
+Tag the repository with the next semantic version based on the commit history
 
 USAGE
   nsv tag [FLAGS] [PATH]...

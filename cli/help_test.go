@@ -54,9 +54,9 @@ func newNextCmd() *cobra.Command {
 
 	cmd.Flags().BoolP("show", "s", false, "show how the version was generated")
 	cmd.Flags().StringP("format", "f", "", "provide a go template for changing the default version format")
-	cmd.Flags().StringSlice("major-prefixes", nil, "a list of conventional commit prefixes for a major version increment")
-	cmd.Flags().StringSlice("minor-prefixes", nil, "a list of conventional commit prefixes for a minor version increment")
-	cmd.Flags().StringSlice("patch-prefixes", nil, "a list of conventional commit prefixes for a patch version increment")
+	cmd.Flags().StringSlice("major-prefixes", nil, "a list of conventional commit prefixes that will trigger a major version increment")
+	cmd.Flags().StringSlice("minor-prefixes", nil, "a list of conventional commit prefixes that will trigger a minor version increment")
+	cmd.Flags().StringSlice("patch-prefixes", nil, "a list of conventional commit prefixes that will trigger a patch version increment")
 
 	return cmd
 }
@@ -64,7 +64,7 @@ func newNextCmd() *cobra.Command {
 func newTagCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "tag [PATH]...",
-		Short: "Tag the repository with the next semantic version",
+		Short: "Tag the repository with the next semantic version based on the commit history",
 		Run:   func(_ *cobra.Command, _ []string) {},
 	}
 
@@ -131,4 +131,17 @@ func TestHelpWithSubcommands(t *testing.T) {
 	require.NoError(t, err)
 
 	golden.Assert(t, buf.String(), "help_with_subcommands.golden")
+}
+
+func TestHelpWithNoWrapping(t *testing.T) {
+	var buf bytes.Buffer
+
+	root := newRootCmd()
+	root.AddCommand(newNextCmd(), newTagCmd(), newVersionCmd())
+	root.SetArgs([]string{"--help"})
+
+	err := Execute(root, WithStdout(&buf), WithWidth(0))
+	require.NoError(t, err)
+
+	golden.Assert(t, buf.String(), "help_no_wrapping.golden")
 }
