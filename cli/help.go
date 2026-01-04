@@ -129,6 +129,23 @@ func renderCommands(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 	}
 }
 
+func flagTypeName(t string) string {
+	switch t {
+	case "stringSlice", "stringArray":
+		return "strings"
+	case "intSlice":
+		return "ints"
+	case "float64":
+		return "float"
+	case "float64Slice":
+		return "floats"
+	case "boolSlice":
+		return "bools"
+	default:
+		return t
+	}
+}
+
 func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 	const flagIndent = 10
 
@@ -150,8 +167,9 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 			flagStr = fmt.Sprintf("    --%s", f.Name)
 		}
 
-		if f.Value.Type() != "bool" {
-			flagStr += " " + theme.FlagArg.Render(fmt.Sprintf("<%s>", strings.ToUpper(f.Name)))
+		flagType := f.Value.Type()
+		if flagType != "bool" {
+			flagStr += " " + theme.FlagType.Render(fmt.Sprintf("<%s>", flagTypeName(flagType)))
 		}
 
 		fmt.Fprintf(w, "  %s\n", theme.Flag.Render(flagStr))

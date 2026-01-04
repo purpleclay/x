@@ -7,11 +7,11 @@ FLAGS
   -h, --help
           help for tag
 
-  -m, --message <MESSAGE>
+  -m, --message <string>
           a custom message for the tag
 
 GLOBAL FLAGS
-      --log-level <LOG-LEVEL>
+      --log-level <string>
           set the logging verbosity
 
           [default: info]

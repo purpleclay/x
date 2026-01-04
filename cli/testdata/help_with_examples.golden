@@ -15,21 +15,21 @@ EXAMPLES
   nsv next --format "v{{.Version}}"
 
 FLAGS
-  -f, --format <FORMAT>
+  -f, --format <string>
           provide a go template for changing the default version format
 
   -h, --help
           help for next
 
-      --major-prefixes <MAJOR-PREFIXES>
+      --major-prefixes <strings>
           a list of conventional commit prefixes that will trigger a major
           version increment
 
-      --minor-prefixes <MINOR-PREFIXES>
+      --minor-prefixes <strings>
           a list of conventional commit prefixes that will trigger a minor
           version increment
 
-      --patch-prefixes <PATCH-PREFIXES>
+      --patch-prefixes <strings>
           a list of conventional commit prefixes that will trigger a patch
           version increment
 
@@ -37,7 +37,7 @@ FLAGS
           show how the version was generated
 
 GLOBAL FLAGS
-      --log-level <LOG-LEVEL>
+      --log-level <string>
           set the logging verbosity
 
           [default: info]
