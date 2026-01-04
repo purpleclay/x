@@ -17,11 +17,8 @@ var (
 	// FlagText styles flag names.
 	FlagText = lipgloss.AdaptiveColor{Light: string(Orange500), Dark: string(Orange50)}
 
-	// FlagArgText styles flag argument placeholders.
-	FlagArgText = lipgloss.AdaptiveColor{Light: string(Purple400), Dark: string(Purple50)}
-
-	// FlagDefaultText styles default value indicators.
-	FlagDefaultText = lipgloss.AdaptiveColor{Light: string(Purple500), Dark: string(Purple100)}
+	// FlagMetaText styles flag metadata such as type hints and default values.
+	FlagMetaText = lipgloss.AdaptiveColor{Light: string(Purple500), Dark: string(Purple100)}
 )
 
 // PurpleClayCLI returns the official PurpleClay CLI theme. Colors adapt
@@ -38,13 +35,15 @@ var (
 //	    cli.Execute(root, cli.WithTheme(theme.PurpleClayCLI()))
 //	}
 func PurpleClayCLI() cli.Theme {
+	flagMeta := lipgloss.NewStyle().Foreground(FlagMetaText)
+
 	return cli.Theme{
 		Command:     Bold.Foreground(CommandText),
 		Comment:     lipgloss.NewStyle().Foreground(CommentText),
 		Description: lipgloss.NewStyle(),
 		Flag:        Bold.Foreground(FlagText),
-		FlagArg:     lipgloss.NewStyle().Foreground(FlagArgText),
-		FlagDefault: lipgloss.NewStyle().Foreground(FlagDefaultText),
+		FlagType:    flagMeta,
+		FlagDefault: flagMeta,
 		Header:      H5.MarginBottom(1),
 	}
 }
