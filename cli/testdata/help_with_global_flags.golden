@@ -12,9 +12,7 @@ FLAGS
 
 GLOBAL FLAGS
       --log-level <string>
-          set the logging verbosity
-
-          [default: info]
+          set the logging verbosity (default: info)
 
       --no-color
           disable colored output
