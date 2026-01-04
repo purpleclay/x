@@ -16,6 +16,7 @@ type options struct {
 	stdout io.Writer
 	stderr io.Writer
 	theme  Theme
+	width  int
 }
 
 func defaultOptions() *options {
@@ -24,6 +25,7 @@ func defaultOptions() *options {
 		stdout: os.Stdout,
 		stderr: os.Stderr,
 		theme:  DefaultTheme(),
+		width:  80,
 	}
 }
 
@@ -74,6 +76,17 @@ func WithTheme(t Theme) Option {
 	}
 }
 
+// WithWidth sets the maximum width for word wrapping CLI help output.
+// Text will wrap at word boundaries to fit within the specified width.
+// The default width is 80 characters. Set to 0 to disable wrapping.
+//
+//	cli.Execute(root, cli.WithWidth(100))
+func WithWidth(w int) Option {
+	return func(o *options) {
+		o.width = w
+	}
+}
+
 // Execute runs the provided cobra command with custom help rendering
 // and sensible defaults. Options can be provided to customise behavior.
 //
@@ -107,8 +120,8 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 
 	cmd.SetOut(o.stdout)
 	cmd.SetErr(o.stderr)
-	cmd.SetHelpFunc(helpFunc(o.theme))
-	cmd.SetUsageFunc(usageFunc(o.theme))
+	cmd.SetHelpFunc(helpFunc(o.theme, o.width))
+	cmd.SetUsageFunc(usageFunc(o.theme, o.width))
 	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
 	cmd.CompletionOptions.DisableDefaultCmd = true
 
