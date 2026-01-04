@@ -178,13 +178,25 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 		if descWidth <= 0 || width == 0 {
 			descWidth = 0
 		}
-		wrapped := wrapText(f.Usage, descWidth)
-		for line := range strings.SplitSeq(wrapped, "\n") {
-			fmt.Fprintf(w, "          %s\n", theme.Description.Render(line))
+
+		// Build description with inline default value
+		desc := f.Usage
+		hasDefault := f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && f.DefValue != "[]"
+		defaultStr := ""
+		if hasDefault {
+			defaultStr = fmt.Sprintf("(default: %s)", f.DefValue)
 		}
 
-		if f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && f.DefValue != "[]" {
-			fmt.Fprintf(w, "\n          %s\n", theme.FlagDefault.Render(fmt.Sprintf("[default: %s]", f.DefValue)))
+		wrapped := wrapText(desc, descWidth)
+		lines := strings.Split(wrapped, "\n")
+
+		for i, line := range lines {
+			isLastLine := i == len(lines)-1
+			if isLastLine && hasDefault {
+				// Append default to last line
+				line = line + " " + theme.FlagDefault.Render(defaultStr)
+			}
+			fmt.Fprintf(w, "          %s\n", theme.Description.Render(line))
 		}
 	})
 }
