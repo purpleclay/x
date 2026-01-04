@@ -32,7 +32,7 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 	}
 
 	fmt.Fprintln(w, theme.Header.Render("USAGE"))
-	fmt.Fprintf(w, "  %s\n", formatUsage(cmd))
+	fmt.Fprintf(w, "  %s\n", formatUsage(cmd, theme))
 
 	if hasSubCommands(cmd) {
 		fmt.Fprintln(w)
@@ -59,21 +59,22 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 	}
 }
 
-func formatUsage(cmd *cobra.Command) string {
+func formatUsage(cmd *cobra.Command, theme Theme) string {
 	var parts []string
 
-	parts = append(parts, cmd.CommandPath())
+	// Style the command path (e.g., "nsv next")
+	parts = append(parts, theme.Command.Render(cmd.CommandPath()))
 
 	if cmd.HasAvailableFlags() {
-		parts = append(parts, "[FLAGS]")
+		parts = append(parts, theme.FlagType.Render("[FLAGS]"))
 	}
 
 	if args := extractArgs(cmd.Use); args != "" {
-		parts = append(parts, args)
+		parts = append(parts, theme.FlagType.Render(args))
 	}
 
 	if hasSubCommands(cmd) {
-		parts = append(parts, "[COMMAND]")
+		parts = append(parts, theme.FlagType.Render("[COMMAND]"))
 	}
 
 	return strings.Join(parts, " ")
