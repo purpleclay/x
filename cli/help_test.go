@@ -9,6 +9,16 @@ import (
 	"gotest.tools/v3/golden"
 )
 
+// Log level enum for NSV commands
+type LogLevel string
+
+const (
+	LogDebug LogLevel = "debug"
+	LogInfo  LogLevel = "info"
+	LogWarn  LogLevel = "warn"
+	LogError LogLevel = "error"
+)
+
 // use a realistic example based on: https://github.com/purpleclay/nsv
 func newRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -24,7 +34,8 @@ func newRootCmd() *cobra.Command {
 		`,
 	}
 
-	cmd.PersistentFlags().String("log-level", "info", "set the logging verbosity")
+	logLevel := Enum(LogInfo, LogDebug, LogInfo, LogWarn, LogError)
+	cmd.PersistentFlags().VarP(logLevel, "log-level", "l", "set the logging verbosity")
 	cmd.PersistentFlags().Bool("no-color", false, "disable colored output")
 	cmd.PersistentFlags().Bool("no-log", false, "disable all log output")
 
@@ -144,4 +155,47 @@ func TestHelpWithNoWrapping(t *testing.T) {
 	require.NoError(t, err)
 
 	golden.Assert(t, buf.String(), "help_no_wrapping.golden")
+}
+
+// TestHelpWithEnum tests enum flags with help text, based on:
+// https://github.com/purpleclay/gpg-import
+func TestHelpWithEnum(t *testing.T) {
+	var buf bytes.Buffer
+
+	type TrustLevel int
+	const (
+		TrustUnknown TrustLevel = iota + 1
+		TrustNever
+		TrustMarginal
+		TrustFull
+		TrustUltimate
+	)
+
+	trust := Enum(TrustUnknown, TrustUnknown, TrustNever, TrustMarginal, TrustFull, TrustUltimate).
+		WithHelp(
+			"I don't know or won't say",
+			"I do NOT trust",
+			"I trust marginally",
+			"I trust fully",
+			"I trust ultimately",
+		)
+
+	cmd := &cobra.Command{
+		Use:   "gpg-import",
+		Short: "Import your GPG private key into the local keyring",
+		Long: `
+			Import your GPG private key into the local keyring of your CI
+			environment. Supports automatic detection and deletion of the
+			imported key after use.
+		`,
+		Run: func(_ *cobra.Command, _ []string) {},
+	}
+
+	cmd.Flags().VarP(trust, "trust-level", "t", "a level of trust to associate with the GPG private key")
+	cmd.SetArgs([]string{"--help"})
+
+	err := Execute(cmd, WithStdout(&buf))
+	require.NoError(t, err)
+
+	golden.Assert(t, buf.String(), "help_with_enum.golden")
 }

@@ -11,7 +11,7 @@ FLAGS
           a custom message for the tag
 
 GLOBAL FLAGS
-      --log-level <string>
+  -l, --log-level <debug|info|warn|error>
           set the logging verbosity (default: info)
 
       --no-color

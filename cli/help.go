@@ -61,8 +61,6 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 
 func formatUsage(cmd *cobra.Command, theme Theme) string {
 	var parts []string
-
-	// Style the command path (e.g., "nsv next")
 	parts = append(parts, theme.Command.Render(cmd.CommandPath()))
 
 	if cmd.HasAvailableFlags() {
@@ -170,6 +168,9 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 
 		flagType := f.Value.Type()
 		if flagType != "bool" {
+			if helper, ok := f.Value.(EnumHelper); ok && helper.HasHelp() {
+				flagType = helper.BaseType()
+			}
 			flagStr += " " + theme.FlagType.Render(fmt.Sprintf("<%s>", flagTypeName(flagType)))
 		}
 
@@ -180,13 +181,8 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 			descWidth = 0
 		}
 
-		// Build description with inline default value
 		desc := f.Usage
 		hasDefault := f.DefValue != "" && f.DefValue != "false" && f.DefValue != "0" && f.DefValue != "[]"
-		defaultStr := ""
-		if hasDefault {
-			defaultStr = fmt.Sprintf("(default: %s)", f.DefValue)
-		}
 
 		wrapped := wrapText(desc, descWidth)
 		lines := strings.Split(wrapped, "\n")
@@ -194,16 +190,28 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 		for i, line := range lines {
 			isLastLine := i == len(lines)-1
 			if isLastLine && hasDefault {
-				// Append default to last line
-				line = line + " " + theme.FlagDefault.Render(defaultStr)
+				line = line + " (default: " + theme.FlagDefault.Render(f.DefValue) + ")"
 			}
 			fmt.Fprintf(w, "          %s\n", theme.Description.Render(line))
+		}
+
+		if helper, ok := f.Value.(EnumHelper); ok && helper.HasHelp() {
+			fmt.Fprintln(w)
+			fmt.Fprintf(w, "          %s\n", theme.Description.Render("Possible values:"))
+			for _, entry := range helper.HelpEntries() {
+				if entry.Help != "" {
+					fmt.Fprintf(w, "          - %s: %s\n",
+						theme.FlagType.Render(entry.Name),
+						theme.Description.Render(entry.Help))
+				} else {
+					fmt.Fprintf(w, "          - %s\n", theme.FlagType.Render(entry.Name))
+				}
+			}
 		}
 	})
 }
 
 func renderExamples(w io.Writer, s string, cmd *cobra.Command, theme Theme) {
-	// Build set of known subcommand names
 	subcommands := make(map[string]bool)
 	root := cmd.Root()
 	for _, c := range root.Commands() {
@@ -238,10 +246,8 @@ func styleExampleLine(line, rootCmd string, subcommands map[string]bool, theme T
 
 		switch {
 		case i == 0 && token.value == rootCmd:
-			// Root command
 			result.WriteString(theme.Command.Render(token.value))
 		case subcommands[token.value]:
-			// Known subcommand
 			result.WriteString(theme.Command.Render(token.value))
 		case strings.HasPrefix(token.value, "-"):
 			if idx := strings.Index(token.value, "="); idx != -1 {

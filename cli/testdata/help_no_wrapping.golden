@@ -17,7 +17,7 @@ FLAGS
   -h, --help
           help for nsv
 
-      --log-level <string>
+  -l, --log-level <debug|info|warn|error>
           set the logging verbosity (default: info)
 
       --no-color
