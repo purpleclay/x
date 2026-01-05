@@ -1,0 +1,19 @@
+Import your GPG private key into the local keyring of your CI environment.
+Supports automatic detection and deletion of the imported key after use.
+
+USAGE
+  gpg-import [FLAGS]
+
+FLAGS
+  -h, --help
+          help for gpg-import
+
+  -t, --trust-level <int>
+          a level of trust to associate with the GPG private key (default: 1)
+
+          Possible values:
+          - 1: I don't know or won't say
+          - 2: I do NOT trust
+          - 3: I trust marginally
+          - 4: I trust fully
+          - 5: I trust ultimately
