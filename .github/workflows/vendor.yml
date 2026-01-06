@@ -1,0 +1,41 @@
+name: govendor
+on:
+  pull_request:
+    branches: [main]
+    paths: ["**/go.mod", "**/go.sum"]
+
+jobs:
+  vendor:
+    if: startsWith(github.head_ref, 'renovate/')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 2
+          token: ${{ secrets.VENDOR_TOKEN }}
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: GPG Import
+        env:
+          GPG_PRIVATE_KEY: "${{ secrets.GPG_PRIVATE_KEY }}"
+          GPG_PASSPHRASE: "${{ secrets.GPG_PASSPHRASE }}"
+        run: nix run github:purpleclay/gpg-import
+
+      - name: Update govendor.toml
+        run: |
+          nix run .#govendor
+
+          if git diff --quiet govendor.toml; then
+            echo "No changes to govendor.toml"
+            exit 0
+          fi
+
+          git add govendor.toml
+          git commit --amend --no-edit --trailer "Co-authored-by: purpleclay <purpleclaygh@gmail.com>"
+          git push --force-with-lease
