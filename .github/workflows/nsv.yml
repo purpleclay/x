@@ -6,16 +6,19 @@ on:
         description: "the project(s) to be tagged, should be separated by whitespace"
         required: true
         type: string
+
+permissions:
+  contents: write
+
 jobs:
   nsv:
     runs-on: ubuntu-24.04
-    permissions:
-      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
+          token: ${{ secrets.GH_NSV }}
 
       - name: Install Nix
         uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
