@@ -87,6 +87,25 @@ func WithWidth(w int) Option {
 	}
 }
 
+const flagGroupAnnotation = "purpleclay_cli_group"
+
+// FlagGroup assigns flags to a named group for organized help output.
+// Grouped flags are rendered under their group header instead of the
+// default FLAGS section. Groups appear in the order they are defined.
+//
+//	cli.FlagGroup(cmd, "Authentication", "token", "api-key")
+//	cli.FlagGroup(cmd, "Output Options", "format", "output")
+func FlagGroup(cmd *cobra.Command, group string, flags ...string) {
+	for _, name := range flags {
+		if f := cmd.Flags().Lookup(name); f != nil {
+			if f.Annotations == nil {
+				f.Annotations = make(map[string][]string)
+			}
+			f.Annotations[flagGroupAnnotation] = []string{group}
+		}
+	}
+}
+
 // Execute runs the provided cobra command with custom help rendering
 // and sensible defaults. Options can be provided to customise behavior.
 //
