@@ -157,8 +157,33 @@ func TestHelpWithNoWrapping(t *testing.T) {
 	golden.Assert(t, buf.String(), "help_no_wrapping.golden")
 }
 
-// TestHelpWithEnum tests enum flags with help text, based on:
-// https://github.com/purpleclay/gpg-import
+func TestHelpWithFlagGroups(t *testing.T) {
+	var buf bytes.Buffer
+
+	cmd := &cobra.Command{
+		Use:   "deploy",
+		Short: "Deploy an application to the cloud",
+		Run:   func(_ *cobra.Command, _ []string) {},
+	}
+
+	cmd.Flags().BoolP("verbose", "v", false, "enable verbose logging")
+	cmd.Flags().String("config", "", "path to config file")
+	cmd.Flags().String("format", "json", "output format")
+	cmd.Flags().String("output", "", "output file path")
+	cmd.Flags().String("token", "", "authentication token")
+	cmd.Flags().String("url", "", "API endpoint URL")
+
+	FlagGroup(cmd, "Output Options", "format", "output")
+	FlagGroup(cmd, "Authentication", "token", "url")
+
+	cmd.SetArgs([]string{"--help"})
+
+	err := Execute(cmd, WithStdout(&buf))
+	require.NoError(t, err)
+
+	golden.Assert(t, buf.String(), "help_with_flag_groups.golden")
+}
+
 func TestHelpWithEnum(t *testing.T) {
 	var buf bytes.Buffer
 

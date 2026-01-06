@@ -47,15 +47,63 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 	}
 
 	if cmd.HasAvailableLocalFlags() {
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, theme.Header.Render("FLAGS"))
-		renderFlags(w, cmd.LocalFlags(), theme, width)
+		renderGroupedFlags(w, cmd.LocalFlags(), "FLAGS", theme, width)
 	}
 
 	if cmd.HasAvailableInheritedFlags() {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render("GLOBAL FLAGS"))
 		renderFlags(w, cmd.InheritedFlags(), theme, width)
+	}
+}
+
+type flagGroup struct {
+	name  string
+	flags []*pflag.Flag
+}
+
+func collectFlagGroups(flags *pflag.FlagSet) (ungrouped []*pflag.Flag, groups []flagGroup) {
+	groupOrder := make([]string, 0)
+	groupFlags := make(map[string][]*pflag.Flag)
+	seen := make(map[string]bool)
+
+	flags.VisitAll(func(f *pflag.Flag) {
+		if f.Hidden {
+			return
+		}
+
+		if ann, ok := f.Annotations[flagGroupAnnotation]; ok && len(ann) > 0 {
+			group := ann[0]
+			if !seen[group] {
+				seen[group] = true
+				groupOrder = append(groupOrder, group)
+			}
+			groupFlags[group] = append(groupFlags[group], f)
+		} else {
+			ungrouped = append(ungrouped, f)
+		}
+	})
+
+	for _, name := range groupOrder {
+		groups = append(groups, flagGroup{name: name, flags: groupFlags[name]})
+	}
+
+	return ungrouped, groups
+}
+
+func renderGroupedFlags(w io.Writer, flags *pflag.FlagSet, defaultHeader string, theme Theme, width int) {
+	ungrouped, groups := collectFlagGroups(flags)
+
+	if len(ungrouped) > 0 {
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, theme.Header.Render(defaultHeader))
+		renderFlagList(w, ungrouped, theme, width)
+	}
+
+	for _, g := range groups {
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, theme.Header.Render(strings.ToUpper(g.name)))
+		renderFlagList(w, g.flags, theme, width)
 	}
 }
 
@@ -146,18 +194,22 @@ func flagTypeName(t string) string {
 }
 
 func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
+	var flagList []*pflag.Flag
+	flags.VisitAll(func(f *pflag.Flag) {
+		if !f.Hidden {
+			flagList = append(flagList, f)
+		}
+	})
+	renderFlagList(w, flagList, theme, width)
+}
+
+func renderFlagList(w io.Writer, flags []*pflag.Flag, theme Theme, width int) {
 	const flagIndent = 10
 
-	first := true
-	flags.VisitAll(func(f *pflag.Flag) {
-		if f.Hidden {
-			return
-		}
-
-		if !first {
+	for i, f := range flags {
+		if i > 0 {
 			fmt.Fprintln(w)
 		}
-		first = false
 
 		var flagStr string
 		if f.Shorthand != "" {
@@ -187,8 +239,8 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 		wrapped := wrapText(desc, descWidth)
 		lines := strings.Split(wrapped, "\n")
 
-		for i, line := range lines {
-			isLastLine := i == len(lines)-1
+		for j, line := range lines {
+			isLastLine := j == len(lines)-1
 			if isLastLine && hasDefault {
 				line = line + " (default: " + theme.FlagDefault.Render(f.DefValue) + ")"
 			}
@@ -208,7 +260,7 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 				}
 			}
 		}
-	})
+	}
 }
 
 func renderExamples(w io.Writer, s string, cmd *cobra.Command, theme Theme) {

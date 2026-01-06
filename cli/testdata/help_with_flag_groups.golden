@@ -1,0 +1,28 @@
+Deploy an application to the cloud
+
+USAGE
+  deploy [FLAGS]
+
+FLAGS
+      --config <string>
+          path to config file
+
+  -h, --help
+          help for deploy
+
+  -v, --verbose
+          enable verbose logging
+
+OUTPUT OPTIONS
+      --format <string>
+          output format (default: json)
+
+      --output <string>
+          output file path
+
+AUTHENTICATION
+      --token <string>
+          authentication token
+
+      --url <string>
+          API endpoint URL
