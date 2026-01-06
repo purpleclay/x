@@ -2,9 +2,12 @@ package cli
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"os"
 
+	mango "github.com/muesli/mango-cobra"
+	"github.com/muesli/roff"
 	"github.com/spf13/cobra"
 )
 
@@ -12,20 +15,22 @@ import (
 type Option func(*options)
 
 type options struct {
-	ctx    context.Context
-	stdout io.Writer
-	stderr io.Writer
-	theme  Theme
-	width  int
+	ctx      context.Context
+	manpages bool
+	stdout   io.Writer
+	stderr   io.Writer
+	theme    Theme
+	width    int
 }
 
 func defaultOptions() *options {
 	return &options{
-		ctx:    context.Background(),
-		stdout: os.Stdout,
-		stderr: os.Stderr,
-		theme:  DefaultTheme(),
-		width:  80,
+		ctx:      context.Background(),
+		manpages: true,
+		stdout:   os.Stdout,
+		stderr:   os.Stderr,
+		theme:    DefaultTheme(),
+		width:    80,
 	}
 }
 
@@ -87,6 +92,15 @@ func WithWidth(w int) Option {
 	}
 }
 
+// WithoutManpage disables the hidden "man" command that generates a manpage.
+// By default, a hidden "man" command is available that outputs a roff-formatted
+// manpage which can be installed by piping to a file in your manpath.
+func WithoutManpage() Option {
+	return func(o *options) {
+		o.manpages = false
+	}
+}
+
 const flagGroupAnnotation = "purpleclay_cli_group"
 
 // FlagGroup assigns flags to a named group for organized help output.
@@ -143,6 +157,25 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 	cmd.SetUsageFunc(usageFunc(o.theme, o.width))
 	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
 	cmd.CompletionOptions.DisableDefaultCmd = true
+
+	if o.manpages {
+		cmd.AddCommand(&cobra.Command{
+			Use:                   "man",
+			Short:                 "Generate a manpage for the CLI",
+			SilenceUsage:          true,
+			DisableFlagsInUseLine: true,
+			Hidden:                true,
+			Args:                  cobra.NoArgs,
+			RunE: func(_ *cobra.Command, _ []string) error {
+				page, err := mango.NewManPage(1, cmd)
+				if err != nil {
+					return err
+				}
+				_, err = fmt.Fprint(o.stdout, page.Build(roff.NewDocument()))
+				return err
+			},
+		})
+	}
 
 	return cmd.ExecuteContext(o.ctx)
 }
