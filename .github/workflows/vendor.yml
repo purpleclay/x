@@ -29,7 +29,7 @@ jobs:
 
       - name: Update govendor.toml
         run: |
-          nix run .#govendor
+          nix develop -c govendor
 
           if git diff --quiet govendor.toml; then
             echo "No changes to govendor.toml"
