@@ -5,8 +5,31 @@ on:
     paths: ["**/go.mod", "**/go.sum"]
 
 jobs:
-  vendor:
+  go-work:
     if: startsWith(github.head_ref, 'renovate/')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create go.work
+        run: nix develop -c go work init $(find . -name 'go.mod' -exec dirname {} \;)
+
+      - name: Upload go.work
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: go-work
+          path: go.work
+
+  vendor:
+    needs: go-work
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
@@ -20,6 +43,11 @@ jobs:
         uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Download go.work
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: go-work
 
       - name: GPG Import
         env:
