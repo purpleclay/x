@@ -15,7 +15,7 @@ FLAGS
 
 OUTPUT OPTIONS
       --format <string>
-          output format (default: json)
+          output format (default: "json")
 
       --output <string>
           output file path
