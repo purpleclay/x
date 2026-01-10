@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -180,16 +181,60 @@ func flagTypeName(t string) string {
 	switch t {
 	case "stringSlice", "stringArray":
 		return "strings"
-	case "intSlice":
+	case "intSlice", "int32Slice", "int64Slice":
 		return "ints"
-	case "float64":
+	case "uintSlice":
+		return "uints"
+	case "float32", "float64":
 		return "float"
-	case "float64Slice":
+	case "float32Slice", "float64Slice":
 		return "floats"
 	case "boolSlice":
 		return "bools"
+	case "durationSlice":
+		return "durations"
+	case "ipSlice":
+		return "ips"
+	case "ipNetSlice":
+		return "cidrs"
 	default:
 		return t
+	}
+}
+
+func formatDefaultValue(value, valueType string, style lipgloss.Style) string {
+	switch valueType {
+	case "string":
+		return `"` + style.Render(value) + `"`
+	case "stringSlice", "stringArray",
+		"durationSlice",
+		"ipSlice", "ipNetSlice":
+		trimmed := strings.TrimPrefix(strings.TrimSuffix(value, "]"), "[")
+		if trimmed == "" {
+			return ""
+		}
+		parts := strings.Split(trimmed, ",")
+		quoted := make([]string, len(parts))
+		for i, p := range parts {
+			quoted[i] = `"` + style.Render(p) + `"`
+		}
+		return strings.Join(quoted, ", ")
+	case "intSlice", "int32Slice", "int64Slice",
+		"uintSlice",
+		"float32Slice", "float64Slice",
+		"boolSlice":
+		trimmed := strings.TrimPrefix(strings.TrimSuffix(value, "]"), "[")
+		if trimmed == "" {
+			return ""
+		}
+		parts := strings.Split(trimmed, ",")
+		styled := make([]string, len(parts))
+		for i, p := range parts {
+			styled[i] = style.Render(p)
+		}
+		return strings.Join(styled, ", ")
+	default:
+		return style.Render(value)
 	}
 }
 
@@ -242,7 +287,12 @@ func renderFlagList(w io.Writer, flags []*pflag.Flag, theme Theme, width int) {
 		for j, line := range lines {
 			isLastLine := j == len(lines)-1
 			if isLastLine && hasDefault {
-				line = line + " (default: " + theme.FlagDefault.Render(f.DefValue) + ")"
+				valueType := f.Value.Type()
+				if helper, ok := f.Value.(EnumHelper); ok {
+					valueType = helper.BaseType()
+				}
+				formatted := formatDefaultValue(f.DefValue, valueType, theme.FlagDefault)
+				line = line + " (default: " + formatted + ")"
 			}
 			fmt.Fprintf(w, "          %s\n", theme.Description.Render(line))
 		}

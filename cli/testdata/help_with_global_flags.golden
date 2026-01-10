@@ -12,7 +12,7 @@ FLAGS
 
 GLOBAL FLAGS
   -l, --log-level <debug|info|warn|error>
-          set the logging verbosity (default: info)
+          set the logging verbosity (default: "info")
 
       --no-color
           disable colored output
