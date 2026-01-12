@@ -15,12 +15,14 @@ import (
 type Option func(*options)
 
 type options struct {
-	ctx      context.Context
-	manpages bool
-	stdout   io.Writer
-	stderr   io.Writer
-	theme    Theme
-	width    int
+	ctx            context.Context
+	manpages       bool
+	stdout         io.Writer
+	stderr         io.Writer
+	theme          Theme
+	version        *VersionInfo
+	versionCommand bool
+	width          int
 }
 
 func defaultOptions() *options {
@@ -101,6 +103,51 @@ func WithoutManpage() Option {
 	}
 }
 
+// WithVersionFlag adds a --version / -V flag to the root command that displays
+// build information. The output is styled according to the configured theme.
+//
+//	cli.Execute(root,
+//	    cli.WithVersionFlag(cli.VersionInfo{
+//	        Version:   "0.5.0",
+//	        GitCommit: "abc1234",
+//	        GitBranch: "main",
+//	        BuildDate: "2024-01-15T10:30:00Z",
+//	        GoVersion: runtime.Version(),
+//	    }),
+//	)
+func WithVersionFlag(info VersionInfo) Option {
+	return func(o *options) {
+		o.version = &info
+		o.versionCommand = false
+	}
+}
+
+// WithVersionCommand adds a "version" subcommand to the root command that
+// displays build information. The subcommand supports additional flags for
+// different output formats.
+//
+// Flags:
+//
+//   - --short: Display only the version number
+//
+//   - --json: Display version information as JSON
+//
+//     cli.Execute(root,
+//     cli.WithVersionCommand(cli.VersionInfo{
+//     Version:   "0.5.0",
+//     GitCommit: "abc1234",
+//     GitBranch: "main",
+//     BuildDate: "2024-01-15T10:30:00Z",
+//     GoVersion: runtime.Version(),
+//     }),
+//     )
+func WithVersionCommand(info VersionInfo) Option {
+	return func(o *options) {
+		o.version = &info
+		o.versionCommand = true
+	}
+}
+
 const flagGroupAnnotation = "purpleclay_cli_group"
 
 // FlagGroup assigns flags to a named group for organized help output.
@@ -175,6 +222,16 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 				return err
 			},
 		})
+	}
+
+	if o.version != nil {
+		if o.versionCommand {
+			cmd.AddCommand(newVersionCommand(o.version, o.theme))
+		} else {
+			cmd.Version = renderVersion(o.version, o.theme)
+			cmd.SetVersionTemplate("{{.Version}}")
+			cmd.Flags().BoolP("version", "V", false, "print build time version information")
+		}
 	}
 
 	return cmd.ExecuteContext(o.ctx)
