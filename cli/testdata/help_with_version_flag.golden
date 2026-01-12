@@ -1,0 +1,11 @@
+A test application
+
+USAGE
+  myapp [FLAGS]
+
+FLAGS
+  -h, --help
+          help for myapp
+
+  -V, --version
+          print build time version information
