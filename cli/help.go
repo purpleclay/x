@@ -3,6 +3,7 @@ package cli
 import (
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -248,6 +249,19 @@ func renderFlags(w io.Writer, flags *pflag.FlagSet, theme Theme, width int) {
 	renderFlagList(w, flagList, theme, width)
 }
 
+func formatEnvVar(envVar string, theme Theme) string {
+	val := os.Getenv(envVar)
+	if val == "" {
+		return "[env: " + theme.EnvVar.Render(envVar) + "]"
+	}
+
+	// Truncate long values
+	if len(val) > 20 {
+		val = val[:20] + "..."
+	}
+	return "[env: " + theme.EnvVar.Render(envVar) + "=" + theme.EnvVarValue.Render(val) + "]"
+}
+
 func renderFlagList(w io.Writer, flags []*pflag.Flag, theme Theme, width int) {
 	const flagIndent = 10
 
@@ -269,6 +283,10 @@ func renderFlagList(w io.Writer, flags []*pflag.Flag, theme Theme, width int) {
 				flagType = helper.BaseType()
 			}
 			flagStr += " " + theme.FlagType.Render(fmt.Sprintf("<%s>", flagTypeName(flagType)))
+		}
+
+		if envVar := GetEnvVar(f); envVar != "" {
+			flagStr += "  " + formatEnvVar(envVar, theme)
 		}
 
 		fmt.Fprintf(w, "  %s\n", theme.Flag.Render(flagStr))

@@ -29,6 +29,14 @@ type Theme struct {
 	// Header styles section headings such as USAGE, COMMANDS, FLAGS,
 	// GLOBAL FLAGS, and EXAMPLES.
 	Header lipgloss.Style
+
+	// EnvVar styles the environment variable name in the env binding hint
+	// (e.g., GPG_PRIVATE_KEY in [env: GPG_PRIVATE_KEY]).
+	EnvVar lipgloss.Style
+
+	// EnvVarValue styles the environment variable value in the env binding hint
+	// (e.g., my-key in [env: GPG_PRIVATE_KEY=my-key]).
+	EnvVarValue lipgloss.Style
 }
 
 // DefaultTheme returns a theme with no styling applied.
@@ -41,5 +49,7 @@ func DefaultTheme() Theme {
 		FlagType:    lipgloss.NewStyle(),
 		FlagDefault: lipgloss.NewStyle(),
 		Header:      lipgloss.NewStyle(),
+		EnvVar:      lipgloss.NewStyle(),
+		EnvVarValue: lipgloss.NewStyle(),
 	}
 }
