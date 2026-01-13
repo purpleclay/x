@@ -7,6 +7,7 @@
 !CODE_OF_CONDUCT.md
 !.zed/*
 !.github/**/*
+!typos.toml
 
 !flake.lock
 !flake.nix
