@@ -234,5 +234,9 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 		}
 	}
 
+	if err := applyEnvBindings(cmd); err != nil {
+		return err
+	}
+
 	return cmd.ExecuteContext(o.ctx)
 }

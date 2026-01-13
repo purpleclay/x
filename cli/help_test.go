@@ -224,3 +224,35 @@ func TestHelpWithEnum(t *testing.T) {
 
 	golden.Assert(t, buf.String(), "help_with_enum.golden")
 }
+
+func TestHelpWithEnvVars(t *testing.T) {
+	var buf bytes.Buffer
+
+	root := newRootCmd()
+	tag := newTagCmd()
+	BindEnv(tag.Flags().Lookup("message"), "NSV_TAG_MESSAGE")
+	root.AddCommand(tag)
+	root.SetArgs([]string{"tag", "--help"})
+
+	err := Execute(root, WithStdout(&buf))
+	require.NoError(t, err)
+
+	golden.Assert(t, buf.String(), "help_with_env_vars.golden")
+}
+
+func TestHelpWithEnvVarsSet(t *testing.T) {
+	t.Setenv("NSV_TAG_MESSAGE", "chore: this is a release created by nsv")
+
+	var buf bytes.Buffer
+
+	root := newRootCmd()
+	tag := newTagCmd()
+	BindEnv(tag.Flags().Lookup("message"), "NSV_TAG_MESSAGE")
+	root.AddCommand(tag)
+	root.SetArgs([]string{"tag", "--help"})
+
+	err := Execute(root, WithStdout(&buf))
+	require.NoError(t, err)
+
+	golden.Assert(t, buf.String(), "help_with_env_vars_set.golden")
+}
