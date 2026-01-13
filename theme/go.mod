@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/charmbracelet/lipgloss v1.1.0
-	github.com/purpleclay/x/cli v0.4.0
+	github.com/purpleclay/x/cli v0.5.0
 )
 
 require (
