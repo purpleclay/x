@@ -52,7 +52,7 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 		renderGroupedFlags(w, cmd.LocalFlags(), "FLAGS", theme, width)
 	}
 
-	if cmd.HasAvailableInheritedFlags() {
+	if cmd.HasAvailableInheritedFlags() && cmd.Annotations["hideInheritedFlags"] != "true" {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render("GLOBAL FLAGS"))
 		renderFlags(w, cmd.InheritedFlags(), theme, width)
@@ -113,7 +113,7 @@ func formatUsage(cmd *cobra.Command, theme Theme) string {
 	var parts []string
 	parts = append(parts, theme.Command.Render(cmd.CommandPath()))
 
-	if cmd.HasAvailableFlags() {
+	if cmd.HasAvailableFlags() && !cmd.DisableFlagsInUseLine {
 		parts = append(parts, theme.FlagType.Render("[FLAGS]"))
 	}
 
@@ -255,7 +255,6 @@ func formatEnvVar(envVar string, theme Theme) string {
 		return "[env: " + theme.EnvVar.Render(envVar) + "]"
 	}
 
-	// Truncate long values
 	if len(val) > 20 {
 		val = val[:20] + "..."
 	}

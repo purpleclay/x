@@ -14,6 +14,7 @@ go get github.com/purpleclay/x/cli
 - **Flag Grouping**: organize related flags into named sections
 - **Enum Flags**: type-safe enums with optional help text for each value
 - **Version Flag**: automatic `--version` flag and `version` subcommand support
+- **Shell Completion**: enhanced completions for 11 shells powered by [carapace](https://github.com/carapace-sh/carapace)
 
 ## Example
 
