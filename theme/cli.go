@@ -14,11 +14,20 @@ var (
 	// CommentText styles comment lines in examples.
 	CommentText = lipgloss.AdaptiveColor{Light: string(Green600), Dark: string(Green50)}
 
+	// EnvVarText styles environment variable names in examples.
+	EnvVarText = lipgloss.AdaptiveColor{Light: string(Blue400), Dark: string(Blue100)}
+
+	// EnvVarValueText styles environment variable values in examples (dimmer than name).
+	EnvVarValueText = lipgloss.AdaptiveColor{Light: string(Blue600), Dark: string(Blue300)}
+
 	// FlagText styles flag names.
 	FlagText = lipgloss.AdaptiveColor{Light: string(Orange500), Dark: string(Orange50)}
 
 	// FlagMetaText styles flag metadata such as type hints and default values.
 	FlagMetaText = lipgloss.AdaptiveColor{Light: string(Purple500), Dark: string(Purple100)}
+
+	// OperatorText styles shell operators in examples.
+	OperatorText = lipgloss.AdaptiveColor{Light: string(Red500), Dark: string(Red50)}
 )
 
 // PurpleClayCLI returns the official PurpleClay CLI theme. Colors adapt
@@ -41,9 +50,12 @@ func PurpleClayCLI() cli.Theme {
 		Command:     Bold.Foreground(CommandText),
 		Comment:     lipgloss.NewStyle().Foreground(CommentText),
 		Description: lipgloss.NewStyle(),
+		EnvVar:      Bold.Foreground(EnvVarText),
+		EnvVarValue: lipgloss.NewStyle().Foreground(EnvVarValueText),
 		Flag:        Bold.Foreground(FlagText),
-		FlagType:    flagMeta,
 		FlagDefault: flagMeta,
+		FlagType:    flagMeta,
 		Header:      H5.MarginBottom(1),
+		Operator:    Bold.Foreground(OperatorText),
 	}
 }
