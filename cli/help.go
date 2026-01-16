@@ -374,12 +374,12 @@ func styleExampleLine(line, rootCmd string, subcommands map[string]bool, theme T
 			result.WriteString(token.value)
 
 		case tokenEnvAssign:
-			// Style environment variable name, value is plain text
+			// Style environment variable name and value separately
 			if idx := strings.Index(token.value, "="); idx != -1 {
 				varName := token.value[:idx+1]
 				varValue := token.value[idx+1:]
 				result.WriteString(theme.EnvVar.Render(varName))
-				result.WriteString(varValue)
+				result.WriteString(theme.EnvVarValue.Render(varValue))
 			} else {
 				result.WriteString(theme.EnvVar.Render(token.value))
 			}
