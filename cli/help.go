@@ -357,59 +357,188 @@ func styleExampleLine(line, rootCmd string, subcommands map[string]bool, theme T
 	tokens := tokenizeExample(line)
 	var result strings.Builder
 
-	for i, token := range tokens {
-		if token.isWhitespace {
+	expectCommand := true
+	for _, token := range tokens {
+		switch token.tokenType {
+		case tokenWhitespace:
 			result.WriteString(token.value)
-			continue
-		}
 
-		switch {
-		case i == 0 && token.value == rootCmd:
-			result.WriteString(theme.Command.Render(token.value))
-		case subcommands[token.value]:
-			result.WriteString(theme.Command.Render(token.value))
-		case strings.HasPrefix(token.value, "-"):
-			if idx := strings.Index(token.value, "="); idx != -1 {
-				flag := token.value[:idx+1]
-				value := token.value[idx+1:]
-				result.WriteString(theme.Flag.Render(flag))
-				result.WriteString(value)
-			} else {
-				result.WriteString(theme.Flag.Render(token.value))
+		case tokenOperator:
+			result.WriteString(theme.Operator.Render(token.value))
+			// After a pipe or semicolon, the next word is a command
+			if token.value == "|" || token.value == ";" || token.value == "&&" || token.value == "||" {
+				expectCommand = true
 			}
-		default:
+
+		case tokenString:
 			result.WriteString(token.value)
+
+		case tokenEnvAssign:
+			// Style environment variable name, value is plain text
+			if idx := strings.Index(token.value, "="); idx != -1 {
+				varName := token.value[:idx+1]
+				varValue := token.value[idx+1:]
+				result.WriteString(theme.EnvVar.Render(varName))
+				result.WriteString(varValue)
+			} else {
+				result.WriteString(theme.EnvVar.Render(token.value))
+			}
+			// After env var, we still expect a command
+
+		case tokenLineContinuation:
+			result.WriteString(theme.Operator.Render(token.value))
+
+		case tokenWord:
+			switch {
+			case expectCommand && token.value == rootCmd:
+				result.WriteString(theme.Command.Render(token.value))
+				expectCommand = false
+			case subcommands[token.value]:
+				result.WriteString(theme.Command.Render(token.value))
+				expectCommand = false
+			case expectCommand:
+				result.WriteString(theme.Command.Render(token.value))
+				expectCommand = false
+			case strings.HasPrefix(token.value, "-"):
+				if idx := strings.Index(token.value, "="); idx != -1 {
+					flag := token.value[:idx+1]
+					value := token.value[idx+1:]
+					result.WriteString(theme.Flag.Render(flag))
+					result.WriteString(value)
+				} else {
+					result.WriteString(theme.Flag.Render(token.value))
+				}
+			default:
+				result.WriteString(token.value)
+			}
 		}
 	}
 
 	return result.String()
 }
 
+// tokenType represents the type of token in an example line.
+type tokenType int
+
+const (
+	tokenWhitespace tokenType = iota
+	tokenWord
+	tokenOperator
+	tokenString
+	tokenEnvAssign
+	tokenLineContinuation
+)
+
 type exampleToken struct {
-	value        string
-	isWhitespace bool
+	value     string
+	tokenType tokenType
+}
+
+// shellOperators contains shell operators ordered by length (longest first for proper matching).
+var shellOperators = []string{
+	">>", "<<", "&&", "||",
+	"|", ">", "<", ";", "&",
 }
 
 func tokenizeExample(line string) []exampleToken {
 	var tokens []exampleToken
-	var current strings.Builder
-	inWhitespace := false
+	runes := []rune(line)
+	i := 0
 
-	for _, r := range line {
-		isSpace := r == ' ' || r == '\t'
-		if isSpace != inWhitespace {
-			if current.Len() > 0 {
-				tokens = append(tokens, exampleToken{value: current.String(), isWhitespace: inWhitespace})
-				current.Reset()
+	for i < len(runes) {
+		r := runes[i]
+
+		// Handle whitespace
+		if r == ' ' || r == '\t' {
+			start := i
+			for i < len(runes) && (runes[i] == ' ' || runes[i] == '\t') {
+				i++
 			}
-			inWhitespace = isSpace
+			tokens = append(tokens, exampleToken{value: string(runes[start:i]), tokenType: tokenWhitespace})
+			continue
 		}
-		current.WriteRune(r)
-	}
 
-	if current.Len() > 0 {
-		tokens = append(tokens, exampleToken{value: current.String(), isWhitespace: inWhitespace})
+		// Handle quoted strings
+		if r == '"' || r == '\'' {
+			quote := r
+			start := i
+			i++
+			for i < len(runes) && runes[i] != quote {
+				if runes[i] == '\\' && i+1 < len(runes) {
+					i += 2
+				} else {
+					i++
+				}
+			}
+			if i < len(runes) {
+				i++ // consume closing quote
+			}
+			tokens = append(tokens, exampleToken{value: string(runes[start:i]), tokenType: tokenString})
+			continue
+		}
+
+		// Handle line continuation (backslash at end of line)
+		if r == '\\' && i == len(runes)-1 {
+			tokens = append(tokens, exampleToken{value: "\\", tokenType: tokenLineContinuation})
+			i++
+			continue
+		}
+
+		// Handle shell operators
+		if op := matchOperator(runes, i); op != "" {
+			tokens = append(tokens, exampleToken{value: op, tokenType: tokenOperator})
+			i += len([]rune(op))
+			continue
+		}
+
+		// Handle words (including flags, commands, env assignments)
+		start := i
+		for i < len(runes) {
+			r := runes[i]
+			if r == ' ' || r == '\t' || r == '"' || r == '\'' {
+				break
+			}
+			if r == '\\' && i == len(runes)-1 {
+				break
+			}
+			if matchOperator(runes, i) != "" {
+				break
+			}
+			i++
+		}
+
+		word := string(runes[start:i])
+		if word != "" {
+			tt := tokenWord
+			// Check for environment variable assignment (VAR=value at start of command)
+			// Env vars can appear consecutively: VAR1=val1 VAR2=val2 cmd
+			if allEnvOrWhitespace(tokens) {
+				if idx := strings.Index(word, "="); idx > 0 && !strings.HasPrefix(word, "-") {
+					tt = tokenEnvAssign
+				}
+			}
+			tokens = append(tokens, exampleToken{value: word, tokenType: tt})
+		}
 	}
 
 	return tokens
+}
+
+func matchOperator(runes []rune, pos int) string {
+	remaining := string(runes[pos:])
+	for _, op := range shellOperators {
+		if strings.HasPrefix(remaining, op) {
+			return op
+		}
+	}
+	return ""
+}
+
+func allEnvOrWhitespace(tokens []exampleToken) bool {
+	for _, t := range tokens {
+		if t.tokenType != tokenWhitespace && t.tokenType != tokenEnvAssign {
+			return false
+		}
+	}
+	return true
 }
