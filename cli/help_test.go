@@ -256,3 +256,207 @@ func TestHelpWithEnvVarsSet(t *testing.T) {
 
 	golden.Assert(t, buf.String(), "help_with_env_vars_set.golden")
 }
+
+func TestTokenizeExample(t *testing.T) {
+	tests := []struct {
+		name     string
+		input    string
+		expected []exampleToken
+	}{
+		{
+			name:  "WithSimpleCommand",
+			input: "cmd arg",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "arg", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithPipeOperator",
+			input: "cmd | grep foo",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "|", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "grep", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "foo", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithRedirectOperator",
+			input: "cmd > out.txt",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: ">", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "out.txt", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithAppendRedirect",
+			input: "cmd >> log.txt",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: ">>", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "log.txt", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithDoubleQuotedString",
+			input: `cmd "hello world"`,
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: `"hello world"`, tokenType: tokenString},
+			},
+		},
+		{
+			name:  "WithSingleQuotedString",
+			input: "cmd 'hello world'",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "'hello world'", tokenType: tokenString},
+			},
+		},
+		{
+			name:  "WithEnvironmentVariable",
+			input: "VAR=value cmd",
+			expected: []exampleToken{
+				{value: "VAR=value", tokenType: tokenEnvAssign},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "cmd", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithMultipleEnvironmentVariables",
+			input: "VAR1=val1 VAR2=val2 cmd",
+			expected: []exampleToken{
+				{value: "VAR1=val1", tokenType: tokenEnvAssign},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "VAR2=val2", tokenType: tokenEnvAssign},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "cmd", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithLineContinuation",
+			input: `cmd --flag \`,
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "--flag", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: `\`, tokenType: tokenLineContinuation},
+			},
+		},
+		{
+			name:  "WithCompoundOperators",
+			input: "cmd1 && cmd2 || cmd3",
+			expected: []exampleToken{
+				{value: "cmd1", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "&&", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "cmd2", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "||", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "cmd3", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithFlagEquals",
+			input: "cmd --format=json",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "--format=json", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithComplexPipeline",
+			input: `API_KEY=secret cmd --verbose | grep "pattern" > results.txt`,
+			expected: []exampleToken{
+				{value: "API_KEY=secret", tokenType: tokenEnvAssign},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "--verbose", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "|", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "grep", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: `"pattern"`, tokenType: tokenString},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: ">", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "results.txt", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithSemicolonSeparator",
+			input: "cmd1; cmd2",
+			expected: []exampleToken{
+				{value: "cmd1", tokenType: tokenWord},
+				{value: ";", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "cmd2", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithBackgroundOperator",
+			input: "cmd &",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "&", tokenType: tokenOperator},
+			},
+		},
+		{
+			name:  "WithHeredocOperator",
+			input: "cmd << EOF",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "<<", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "EOF", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithInputRedirect",
+			input: "cmd < input.txt",
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "<", tokenType: tokenOperator},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: "input.txt", tokenType: tokenWord},
+			},
+		},
+		{
+			name:  "WithEscapedQuoteInString",
+			input: `cmd "hello \"world\""`,
+			expected: []exampleToken{
+				{value: "cmd", tokenType: tokenWord},
+				{value: " ", tokenType: tokenWhitespace},
+				{value: `"hello \"world\""`, tokenType: tokenString},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tokenizeExample(tt.input)
+			require.Equal(t, tt.expected, got)
+		})
+	}
+}
