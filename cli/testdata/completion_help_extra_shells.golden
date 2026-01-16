@@ -3,9 +3,11 @@ Generate shell completion scripts for your shell.
 Supported shells: bash, zsh, fish, powershell, nushell
 
 USAGE
+
   nsv completion <shell>
 
 EXAMPLES
+
   # Bourne Again Shell
   source <(nsv completion bash)
 
@@ -22,5 +24,6 @@ EXAMPLES
   nsv completion nushell | save ~/.cache/nushell/completion.nu
 
 FLAGS
+
   -h, --help
           help for completion

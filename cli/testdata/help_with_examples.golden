@@ -2,9 +2,11 @@ Generate the next semantic version based on the conventional commit history of
 your repository.
 
 USAGE
+
   nsv next [FLAGS] [PATH]...
 
 EXAMPLES
+
   # Generate the next semantic version
   nsv next
 
@@ -15,6 +17,7 @@ EXAMPLES
   nsv next --format "v{{.Version}}"
 
 FLAGS
+
   -f, --format <string>
           provide a go template for changing the default version format
 
@@ -37,6 +40,7 @@ FLAGS
           show how the version was generated
 
 GLOBAL FLAGS
+
   -l, --log-level <debug|info|warn|error>
           set the logging verbosity (default: "info")
 

@@ -6,15 +6,18 @@ There is no need to manually maintain a version file or embed the version within
 your source code. NSV will do all of this for you.
 
 USAGE
+
   nsv [FLAGS] [COMMAND]
 
 COMMANDS
+
   completion    Generate shell completion scripts for your shell
   next          Generate the next semantic version
   tag           Tag the repository with the next semantic version based on the
                 commit history
 
 FLAGS
+
   -h, --help
           help for nsv
 

@@ -2,9 +2,11 @@ Import your GPG private key into the local keyring of your CI environment.
 Supports automatic detection and deletion of the imported key after use.
 
 USAGE
+
   gpg-import [FLAGS]
 
 FLAGS
+
   -h, --help
           help for gpg-import
 
