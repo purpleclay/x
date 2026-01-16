@@ -1,0 +1,26 @@
+Generate shell completion scripts for your shell.
+
+Supported shells: bash, zsh, fish, powershell, nushell
+
+USAGE
+  nsv completion <shell>
+
+EXAMPLES
+  # Bourne Again Shell
+  source <(nsv completion bash)
+
+  # Z Shell
+  source <(nsv completion zsh)
+
+  # Friendly Interactive Shell
+  nsv completion fish | source
+
+  # PowerShell
+  nsv completion powershell | Out-String | Invoke-Expression
+
+  # Nushell
+  nsv completion nushell | save ~/.cache/nushell/completion.nu
+
+FLAGS
+  -h, --help
+          help for completion

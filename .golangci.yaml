@@ -34,6 +34,10 @@ linters:
       - third_party$
       - builtin$
       - examples$
+    rules:
+      - linters:
+          - ireturn
+        path: cli/completion\.go
 formatters:
   enable:
     - gofumpt

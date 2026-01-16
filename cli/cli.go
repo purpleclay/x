@@ -16,6 +16,7 @@ type Option func(*options)
 
 type options struct {
 	ctx            context.Context
+	completion     *completionOptions
 	manpages       bool
 	stdout         io.Writer
 	stderr         io.Writer
@@ -148,6 +149,38 @@ func WithVersionCommand(info VersionInfo) Option {
 	}
 }
 
+// WithCompletionCommand adds a "completion" subcommand that generates shell
+// completion scripts. By default, it supports bash, zsh, and fish shells.
+//
+// Basic usage:
+//
+//	cli.Execute(root, cli.WithCompletionCommand())
+//
+// With custom completions:
+//
+//	cli.Execute(root,
+//	    cli.WithCompletionCommand(
+//	        cli.CompleteFlag("config", cli.Files(".yaml", ".json")),
+//	        cli.CompleteFlag("format", cli.Values("json", "text")),
+//	    ),
+//	)
+//
+// With additional shells:
+//
+//	cli.Execute(root,
+//	    cli.WithCompletionCommand(
+//	        cli.WithExtraShells(cli.ShellPowerShell, cli.ShellNushell),
+//	    ),
+//	)
+func WithCompletionCommand(opts ...CompletionOption) Option {
+	return func(o *options) {
+		o.completion = defaultCompletionOptions()
+		for _, opt := range opts {
+			opt(o.completion)
+		}
+	}
+}
+
 const flagGroupAnnotation = "purpleclay_cli_group"
 
 // FlagGroup assigns flags to a named group for organized help output.
@@ -232,6 +265,11 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 			cmd.SetVersionTemplate("{{.Version}}")
 			cmd.Flags().BoolP("version", "V", false, "print build time version information")
 		}
+	}
+
+	if o.completion != nil {
+		cmd.AddCommand(newCompletionCommand(o.completion, cmd.Name()))
+		applyCompletions(cmd, o.completion)
 	}
 
 	if err := applyEnvBindings(cmd); err != nil {

@@ -1,0 +1,20 @@
+Generate shell completion scripts for your shell.
+
+Supported shells: bash, zsh, fish
+
+USAGE
+  nsv completion <shell>
+
+EXAMPLES
+  # Bourne Again Shell
+  source <(nsv completion bash)
+
+  # Z Shell
+  source <(nsv completion zsh)
+
+  # Friendly Interactive Shell
+  nsv completion fish | source
+
+FLAGS
+  -h, --help
+          help for completion

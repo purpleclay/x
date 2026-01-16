@@ -1,5 +1,7 @@
 # X
 
+[![Go](https://img.shields.io/badge/Go-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+
 A collection of experimental Go packages.
 
 > [!WARNING]
