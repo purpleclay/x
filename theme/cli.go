@@ -55,7 +55,7 @@ func PurpleClayCLI() cli.Theme {
 		Flag:        Bold.Foreground(FlagText),
 		FlagDefault: flagMeta,
 		FlagType:    flagMeta,
-		Header:      H5.MarginBottom(1),
+		Header:      H5,
 		Operator:    Bold.Foreground(OperatorText),
 	}
 }
