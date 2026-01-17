@@ -34,17 +34,20 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 	}
 
 	fmt.Fprintln(w, theme.Header.Render("USAGE"))
+	fmt.Fprintln(w)
 	fmt.Fprintf(w, "  %s\n", formatUsage(cmd, theme))
 
 	if hasSubCommands(cmd) {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render("COMMANDS"))
+		fmt.Fprintln(w)
 		renderCommands(w, cmd, theme, width)
 	}
 
 	if cmd.Example != "" {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render("EXAMPLES"))
+		fmt.Fprintln(w)
 		renderExamples(w, dedent(cmd.Example), cmd, theme)
 	}
 
@@ -55,6 +58,7 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 	if cmd.HasAvailableInheritedFlags() && cmd.Annotations["hideInheritedFlags"] != "true" {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render("GLOBAL FLAGS"))
+		fmt.Fprintln(w)
 		renderFlags(w, cmd.InheritedFlags(), theme, width)
 	}
 }
@@ -99,12 +103,14 @@ func renderGroupedFlags(w io.Writer, flags *pflag.FlagSet, defaultHeader string,
 	if len(ungrouped) > 0 {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render(defaultHeader))
+		fmt.Fprintln(w)
 		renderFlagList(w, ungrouped, theme, width)
 	}
 
 	for _, g := range groups {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, theme.Header.Render(strings.ToUpper(g.name)))
+		fmt.Fprintln(w)
 		renderFlagList(w, g.flags, theme, width)
 	}
 }

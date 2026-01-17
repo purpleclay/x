@@ -27,7 +27,6 @@ type VersionInfo struct {
 	GoVersion string `json:"go_version,omitempty"`
 
 	// Platform is the OS/architecture the binary was built for.
-	// This is automatically populated from runtime.GOOS/GOARCH if not set.
 	Platform string `json:"platform,omitempty"`
 }
 

@@ -1,9 +1,11 @@
 Tag the repository with the next semantic version based on the commit history
 
 USAGE
+
   nsv tag [FLAGS] [PATH]...
 
 FLAGS
+
   -h, --help
           help for tag
 
@@ -11,6 +13,7 @@ FLAGS
           a custom message for the tag
 
 GLOBAL FLAGS
+
   -l, --log-level <debug|info|warn|error>
           set the logging verbosity (default: "info")
 
