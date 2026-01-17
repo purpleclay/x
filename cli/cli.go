@@ -237,6 +237,7 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 	cmd.SetUsageFunc(usageFunc(o.theme, o.width))
 	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
 	cmd.CompletionOptions.DisableDefaultCmd = true
+	cmd.TraverseChildren = true
 
 	if o.manpages {
 		cmd.AddCommand(&cobra.Command{

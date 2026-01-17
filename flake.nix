@@ -21,11 +21,11 @@
   };
 
   outputs = {
+    self,
     nixpkgs,
     flake-utils,
     git-hooks,
     go-overlay,
-    ...
   }:
     flake-utils.lib.eachDefaultSystem (
       system: let
@@ -53,6 +53,16 @@
               settings = {
                 check = true;
               };
+            };
+
+            govendor = {
+              enable = true;
+              name = "govendor";
+              description = "Check if govendor.toml has drifted from go.mod or go.work";
+              entry = "${go-overlay.packages.${system}.govendor}/bin/govendor --check";
+              files = "(^|/)go\\.(mod|work)$";
+              excludes = ["testdata/" "test/"];
+              pass_filenames = true;
             };
 
             typos = {
