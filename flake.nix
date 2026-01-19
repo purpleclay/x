@@ -59,7 +59,7 @@
               enable = true;
               name = "govendor";
               description = "Check if govendor.toml has drifted from go.mod or go.work";
-              entry = "${go-overlay.packages.${system}.govendor}/bin/govendor --check";
+              entry = "${go-overlay.packages.${system}.govendor}/bin/govendor --check --workspace";
               files = "(^|/)go\\.(mod|work)$";
               excludes = ["testdata/" "test/"];
               pass_filenames = true;
