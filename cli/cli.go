@@ -277,5 +277,6 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 		return err
 	}
 
+	addFlagRequirementsValidation(cmd)
 	return cmd.ExecuteContext(o.ctx)
 }
