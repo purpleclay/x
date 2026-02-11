@@ -7,7 +7,7 @@ on:
       - "*.nix"
       - "**/*.nix"
       - "flake.lock"
-      - "govendor.toml"
+      - "theme/govendor.toml"
   pull_request:
     branches:
       - main
@@ -15,7 +15,7 @@ on:
       - "*.nix"
       - "**/*.nix"
       - "flake.lock"
-      - "govendor.toml"
+      - "theme/govendor.toml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

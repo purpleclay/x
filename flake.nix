@@ -58,9 +58,9 @@
             govendor = {
               enable = true;
               name = "govendor";
-              description = "Check if govendor.toml has drifted from go.mod or go.work";
-              entry = "${go-overlay.packages.${system}.govendor}/bin/govendor --check --workspace";
-              files = "(^|/)go\\.(mod|work)$";
+              description = "Check if govendor.toml has drifted from go.mod";
+              entry = "${go-overlay.packages.${system}.govendor}/bin/govendor --check";
+              files = "(^|/)go\\.mod$";
               excludes = ["testdata/" "test/"];
               pass_filenames = true;
             };
@@ -78,8 +78,8 @@
           };
 
           packages = {
-            theme = callPackage ./default.nix {
-              inherit buildGoWorkspace;
+            theme = callPackage ./theme/default.nix {
+              inherit buildGoApplication;
               go = go-bin.fromGoMod ./theme/go.mod;
             };
           };

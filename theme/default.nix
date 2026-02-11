@@ -1,15 +1,15 @@
 {
   lib,
-  buildGoWorkspace,
+  buildGoApplication,
   go,
 }:
-buildGoWorkspace {
+buildGoApplication {
   inherit go;
 
   pname = "theme";
   version = "0.1.0";
   src = ./.;
-  subPackages = ["theme/cmd/theme"];
+  subPackages = ["cmd/theme"];
   modules = ./govendor.toml;
   ldflags = ["-s"];
 
