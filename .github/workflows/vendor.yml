@@ -2,7 +2,7 @@ name: govendor
 on:
   pull_request:
     branches: [main]
-    paths: ["**/go.mod", "**/go.sum"]
+    paths: ["theme/go.mod", "theme/go.sum"]
 
 jobs:
   vendor:
@@ -28,8 +28,9 @@ jobs:
         run: nix run github:purpleclay/gpg-import
 
       - name: Update govendor.toml
+        working-directory: theme
         run: |
-          nix develop -c govendor
+          nix run github:purpleclay/go-overlay#govendor
 
           if git diff --quiet govendor.toml; then
             echo "No changes to govendor.toml"
