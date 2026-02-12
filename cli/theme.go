@@ -41,20 +41,29 @@ type Theme struct {
 	// Operator styles shell operators in the EXAMPLES section
 	// (e.g., |, >, >>, <, &&, ||, ;).
 	Operator lipgloss.Style
+
+	// ErrorHeader styles the error badge (e.g., bold "ERROR" with a
+	// colored background).
+	ErrorHeader lipgloss.Style
+
+	// ErrorDetails styles the error message text that follows the badge.
+	ErrorDetails lipgloss.Style
 }
 
 // DefaultTheme returns a theme with no styling applied.
 func DefaultTheme() Theme {
 	return Theme{
-		Command:     lipgloss.NewStyle(),
-		Comment:     lipgloss.NewStyle(),
-		Description: lipgloss.NewStyle(),
-		EnvVar:      lipgloss.NewStyle(),
-		EnvVarValue: lipgloss.NewStyle(),
-		Flag:        lipgloss.NewStyle(),
-		FlagDefault: lipgloss.NewStyle(),
-		FlagType:    lipgloss.NewStyle(),
-		Header:      lipgloss.NewStyle(),
-		Operator:    lipgloss.NewStyle(),
+		Command:      lipgloss.NewStyle(),
+		Comment:      lipgloss.NewStyle(),
+		Description:  lipgloss.NewStyle(),
+		EnvVar:       lipgloss.NewStyle(),
+		EnvVarValue:  lipgloss.NewStyle(),
+		Flag:         lipgloss.NewStyle(),
+		FlagDefault:  lipgloss.NewStyle(),
+		FlagType:     lipgloss.NewStyle(),
+		Header:       lipgloss.NewStyle(),
+		Operator:     lipgloss.NewStyle(),
+		ErrorHeader:  lipgloss.NewStyle(),
+		ErrorDetails: lipgloss.NewStyle(),
 	}
 }
