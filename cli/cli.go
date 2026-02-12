@@ -17,6 +17,7 @@ type Option func(*options)
 type options struct {
 	ctx            context.Context
 	completion     *completionOptions
+	errHandler     ErrorHandler
 	manpages       bool
 	stdout         io.Writer
 	stderr         io.Writer
@@ -28,12 +29,13 @@ type options struct {
 
 func defaultOptions() *options {
 	return &options{
-		ctx:      context.Background(),
-		manpages: true,
-		stdout:   os.Stdout,
-		stderr:   os.Stderr,
-		theme:    DefaultTheme(),
-		width:    80,
+		ctx:        context.Background(),
+		errHandler: DefaultErrorHandler,
+		manpages:   true,
+		stdout:     os.Stdout,
+		stderr:     os.Stderr,
+		theme:      DefaultTheme(),
+		width:      80,
 	}
 }
 
@@ -56,6 +58,19 @@ func WithStdout(w io.Writer) Option {
 func WithStderr(w io.Writer) Option {
 	return func(o *options) {
 		o.stderr = w
+	}
+}
+
+// WithErrorHandler sets a custom error handler for rendering errors.
+// The handler is called when the command returns an error, receiving
+// the stderr writer, the configured theme, and the error.
+//
+//	cli.Execute(root, cli.WithErrorHandler(func(w io.Writer, theme cli.Theme, err error) {
+//	    fmt.Fprintln(w, err)
+//	}))
+func WithErrorHandler(handler ErrorHandler) Option {
+	return func(o *options) {
+		o.errHandler = handler
 	}
 }
 
@@ -236,6 +251,7 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 	cmd.SetHelpFunc(helpFunc(o.theme, o.width))
 	cmd.SetUsageFunc(usageFunc(o.theme, o.width))
 	cmd.SetHelpCommand(&cobra.Command{Hidden: true})
+	cmd.SilenceErrors = true
 	cmd.CompletionOptions.DisableDefaultCmd = true
 	cmd.TraverseChildren = true
 
@@ -278,5 +294,10 @@ func Execute(cmd *cobra.Command, opts ...Option) error {
 	}
 
 	addFlagRequirementsValidation(cmd)
-	return cmd.ExecuteContext(o.ctx)
+
+	if err := cmd.ExecuteContext(o.ctx); err != nil {
+		o.errHandler(o.stderr, o.theme, err)
+		return err
+	}
+	return nil
 }
