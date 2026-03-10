@@ -16,10 +16,10 @@ jobs:
           fetch-depth: 2
           token: ${{ secrets.VENDOR_TOKEN }}
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: GPG Import
         env:

@@ -12,62 +12,19 @@ on:
         required: false
 
 jobs:
-  gofumpt:
-    runs-on: ubuntu-24.04
-    if: github.actor != 'renovate[bot]'
-    name: gofumpt
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install Nix
-        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Cachix
-        uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1 # v16
-        with:
-          name: purpleclay
-          authToken: ${{ secrets.GH_CACHIX }}
-          skipPush: true
-          useDaemon: false
-
-      - name: Setup Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
-        with:
-          go-version-file: ${{ inputs.working-directory }}/go.mod
-          cache: true
-
-      - name: Format Check
-        run: nix develop -c gofumpt -l ${{ inputs.working-directory }}/
-
   golangci-lint:
     runs-on: ubuntu-24.04
     if: github.actor != 'renovate[bot]'
     name: golangci-lint
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Cachix
-        uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1 # v16
-        with:
-          name: purpleclay
-          authToken: ${{ secrets.GH_CACHIX }}
-          skipPush: true
-          useDaemon: false
-
-      - name: Setup Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
-        with:
-          go-version-file: ${{ inputs.working-directory }}/go.mod
-          cache: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cachix-token: ${{ secrets.GH_CACHIX }}
 
       - name: Lint
         working-directory: ${{ inputs.working-directory }}
@@ -80,24 +37,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Cachix
-        uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1 # v16
-        with:
-          name: purpleclay
-          authToken: ${{ secrets.GH_CACHIX }}
-          skipPush: true
-          useDaemon: false
-
-      - name: Setup Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
-        with:
-          go-version-file: ${{ inputs.working-directory }}/go.mod
-          cache: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cachix-token: ${{ secrets.GH_CACHIX }}
 
       - name: Run tests
         working-directory: ${{ inputs.working-directory }}
@@ -110,24 +54,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15 # v31
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Setup Cachix
-        uses: cachix/cachix-action@3ba601ff5bbb07c7220846facfa2cd81eeee15a1 # v16
-        with:
-          name: purpleclay
-          authToken: ${{ secrets.GH_CACHIX }}
-          skipPush: true
-          useDaemon: false
-
-      - name: Setup Go
-        uses: actions/setup-go@7a3fe6cf4cb3a834922a1244abfce67bcef6a0c5 # v6
-        with:
-          go-version-file: ${{ inputs.working-directory }}/go.mod
-          cache: true
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          cachix-token: ${{ secrets.GH_CACHIX }}
 
       - name: Build
         working-directory: ${{ inputs.working-directory }}
