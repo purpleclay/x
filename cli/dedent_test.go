@@ -53,6 +53,11 @@ func TestDedent(t *testing.T) {
 			input:    "    line one",
 			expected: "line one",
 		},
+		{
+			name:     "WithTabsAfterFirstLine",
+			input:    "line one\n\t\tline two\n\t\tline three",
+			expected: "line one\nline two\nline three",
+		},
 	}
 
 	for _, tt := range tests {
