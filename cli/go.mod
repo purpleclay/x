@@ -3,7 +3,7 @@ module github.com/purpleclay/x/cli
 go 1.24.0
 
 require (
-	github.com/carapace-sh/carapace v1.11.1
+	github.com/carapace-sh/carapace v1.11.2
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/reflow v0.3.0
