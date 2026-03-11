@@ -3,7 +3,7 @@ module github.com/purpleclay/x/theme
 go 1.24.0
 
 require (
-	github.com/charmbracelet/lipgloss v1.1.0
+	github.com/charmbracelet/lipgloss/v2 v2.0.1
 	github.com/purpleclay/x/cli v0.6.3
 )
 
