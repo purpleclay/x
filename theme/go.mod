@@ -3,7 +3,7 @@ module github.com/purpleclay/x/theme
 go 1.25.0
 
 require (
-	charm.land/lipgloss/v2 v2.0.1
+	charm.land/lipgloss/v2 v2.0.2
 	github.com/purpleclay/x/cli v0.7.0
 )
 

@@ -3,7 +3,7 @@ module github.com/purpleclay/x/cli
 go 1.25.0
 
 require (
-	charm.land/lipgloss/v2 v2.0.1
+	charm.land/lipgloss/v2 v2.0.2
 	github.com/carapace-sh/carapace v1.11.2
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/reflow v0.3.0
