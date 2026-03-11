@@ -1,10 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"image/color"
 
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
 	"github.com/purpleclay/x/theme"
 )
 
@@ -15,10 +14,10 @@ func main() {
 		"",
 		typography(),
 	)
-	fmt.Fprint(os.Stdout, lipgloss.NewStyle().Margin(2, 2).Render(out))
+	lipgloss.Print(lipgloss.NewStyle().Margin(2, 2).Render(out))
 }
 
-func colorRow(colors []lipgloss.Color) string {
+func colorRow(colors []color.Color) string {
 	colorCell := lipgloss.NewStyle().Height(3).Width(12)
 	labelCell := lipgloss.NewStyle().Width(12).AlignHorizontal(lipgloss.Center)
 
@@ -40,23 +39,23 @@ func colorRow(colors []lipgloss.Color) string {
 }
 
 func colors() string {
-	purple := []lipgloss.Color{
+	purple := []color.Color{
 		theme.Purple50, theme.Purple100, theme.Purple200, theme.Purple300, theme.Purple400,
 		theme.Purple500, theme.Purple600, theme.Purple700, theme.Purple800, theme.Purple900,
 	}
-	green := []lipgloss.Color{
+	green := []color.Color{
 		theme.Green50, theme.Green100, theme.Green200, theme.Green300, theme.Green400,
 		theme.Green500, theme.Green600, theme.Green700, theme.Green800, theme.Green900,
 	}
-	orange := []lipgloss.Color{
+	orange := []color.Color{
 		theme.Orange50, theme.Orange100, theme.Orange200, theme.Orange300, theme.Orange400,
 		theme.Orange500, theme.Orange600, theme.Orange700, theme.Orange800, theme.Orange900,
 	}
-	red := []lipgloss.Color{
+	red := []color.Color{
 		theme.Red50, theme.Red100, theme.Red200, theme.Red300, theme.Red400,
 		theme.Red500, theme.Red600, theme.Red700, theme.Red800, theme.Red900,
 	}
-	blue := []lipgloss.Color{
+	blue := []color.Color{
 		theme.Blue50, theme.Blue100, theme.Blue200, theme.Blue300, theme.Blue400,
 		theme.Blue500, theme.Blue600, theme.Blue700, theme.Blue800, theme.Blue900,
 	}

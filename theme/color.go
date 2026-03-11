@@ -1,6 +1,6 @@
 package theme
 
-import "github.com/charmbracelet/lipgloss"
+import "charm.land/lipgloss/v2"
 
 // Purple is the primary color palette derived from the PurpleClay brand.
 // Shades range from lightest (Purple50) to darkest (Purple900).

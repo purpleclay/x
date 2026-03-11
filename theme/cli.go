@@ -1,7 +1,8 @@
 package theme
 
 import (
-	"github.com/charmbracelet/lipgloss"
+	"charm.land/lipgloss/v2"
+	"charm.land/lipgloss/v2/compat"
 	"github.com/purpleclay/x/cli"
 )
 
@@ -9,25 +10,25 @@ import (
 // Each color adapts for readability on light and dark terminals.
 var (
 	// CommandText styles command and subcommand names.
-	CommandText = lipgloss.AdaptiveColor{Light: string(Purple400), Dark: string(Purple50)}
+	CommandText = compat.AdaptiveColor{Light: Purple400, Dark: Purple50}
 
 	// CommentText styles comment lines in examples.
-	CommentText = lipgloss.AdaptiveColor{Light: string(Green600), Dark: string(Green50)}
+	CommentText = compat.AdaptiveColor{Light: Green600, Dark: Green50}
 
 	// EnvVarText styles environment variable names in examples.
-	EnvVarText = lipgloss.AdaptiveColor{Light: string(Blue400), Dark: string(Blue100)}
+	EnvVarText = compat.AdaptiveColor{Light: Blue400, Dark: Blue100}
 
 	// EnvVarValueText styles environment variable values in examples (dimmer than name).
-	EnvVarValueText = lipgloss.AdaptiveColor{Light: string(Blue600), Dark: string(Blue300)}
+	EnvVarValueText = compat.AdaptiveColor{Light: Blue600, Dark: Blue300}
 
 	// FlagText styles flag names.
-	FlagText = lipgloss.AdaptiveColor{Light: string(Orange500), Dark: string(Orange50)}
+	FlagText = compat.AdaptiveColor{Light: Orange500, Dark: Orange50}
 
 	// FlagMetaText styles flag metadata such as type hints and default values.
-	FlagMetaText = lipgloss.AdaptiveColor{Light: string(Purple500), Dark: string(Purple100)}
+	FlagMetaText = compat.AdaptiveColor{Light: Purple500, Dark: Purple100}
 
 	// OperatorText styles shell operators in examples.
-	OperatorText = lipgloss.AdaptiveColor{Light: string(Red500), Dark: string(Red50)}
+	OperatorText = compat.AdaptiveColor{Light: Red500, Dark: Red50}
 )
 
 // PurpleClayCLI returns the official PurpleClay CLI theme. Colors adapt
