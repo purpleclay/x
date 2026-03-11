@@ -36,7 +36,7 @@
 
         buildInputs = with pkgs; [
           alejandra
-          ((go-bin.versions."1.24.11").withTools ["gofumpt" "golangci-lint"])
+          ((go-bin.versions."1.25.8").withTools ["gofumpt" "golangci-lint"])
           go-overlay.packages.${system}.govendor
           nil
           typos

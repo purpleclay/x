@@ -1,6 +1,6 @@
 package cli
 
-import "github.com/charmbracelet/lipgloss"
+import "charm.land/lipgloss/v2"
 
 // Theme defines the styles used for rendering CLI help output.
 // Each field controls the appearance of a specific element.
