@@ -55,20 +55,22 @@ func addFlagRequirementsValidation(cmd *cobra.Command) {
 	existingPreRunE := cmd.PersistentPreRunE
 	existingPreRun := cmd.PersistentPreRun
 
-	cmd.PersistentPreRunE = func(c *cobra.Command, args []string) error {
-		if err := validateFlagRequirements(c); err != nil {
-			return err
-		}
+	if existingPreRunE != nil || existingPreRun != nil || !cmd.HasParent() {
+		cmd.PersistentPreRunE = func(c *cobra.Command, args []string) error {
+			if err := validateFlagRequirements(c); err != nil {
+				return err
+			}
 
-		if existingPreRunE != nil {
-			return existingPreRunE(c, args)
+			if existingPreRunE != nil {
+				return existingPreRunE(c, args)
+			}
+			if existingPreRun != nil {
+				existingPreRun(c, args)
+			}
+			return nil
 		}
-		if existingPreRun != nil {
-			existingPreRun(c, args)
-		}
-		return nil
+		cmd.PersistentPreRun = nil
 	}
-	cmd.PersistentPreRun = nil
 
 	for _, sub := range cmd.Commands() {
 		addFlagRequirementsValidation(sub)
