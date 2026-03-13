@@ -111,6 +111,31 @@ func TestMarkFlagRequiresNilFlag(_ *testing.T) {
 	MarkFlagRequires(nil, "check")
 }
 
+func TestMarkFlagRequiresInheritedPersistentPreRunE(t *testing.T) {
+	var buf bytes.Buffer
+	preRunExecuted := false
+
+	root := &cobra.Command{
+		Use: "root",
+		PersistentPreRunE: func(_ *cobra.Command, _ []string) error {
+			preRunExecuted = true
+			return nil
+		},
+	}
+
+	sub := &cobra.Command{
+		Use: "sub",
+		Run: func(_ *cobra.Command, _ []string) {},
+	}
+	root.AddCommand(sub)
+
+	root.SetArgs([]string{"sub"})
+
+	err := Execute(root, WithStdout(&buf))
+	require.NoError(t, err)
+	assert.True(t, preRunExecuted, "parent PersistentPreRunE should be inherited by subcommand")
+}
+
 func TestMarkFlagRequiresPreservesExistingPreRunE(t *testing.T) {
 	var buf bytes.Buffer
 	var check, workspace bool
