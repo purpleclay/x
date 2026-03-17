@@ -1,17 +1,17 @@
-name: theme
+name: nix
 
 on:
   push:
     branches:
       - main
     paths:
-      - theme/**
+      - nix/**
   pull_request:
     branches:
       - main
     paths:
-      - theme/**
-      - .github/workflows/theme.yml
+      - nix/**
+      - .github/workflows/x-nix.yml
       - .github/workflows/x-lib.yml
 
 concurrency:
@@ -26,6 +26,6 @@ jobs:
   x:
     uses: ./.github/workflows/x-lib.yml
     with:
-      working-directory: theme
+      working-directory: nix
     secrets:
       GH_CACHIX: ${{ secrets.GH_CACHIX }}
