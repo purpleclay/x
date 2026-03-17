@@ -1,17 +1,17 @@
-name: cli
+name: theme
 
 on:
   push:
     branches:
       - main
     paths:
-      - cli/**
+      - theme/**
   pull_request:
     branches:
       - main
     paths:
-      - cli/**
-      - .github/workflows/cli.yml
+      - theme/**
+      - .github/workflows/x-theme.yml
       - .github/workflows/x-lib.yml
 
 concurrency:
@@ -26,6 +26,6 @@ jobs:
   x:
     uses: ./.github/workflows/x-lib.yml
     with:
-      working-directory: cli
+      working-directory: theme
     secrets:
       GH_CACHIX: ${{ secrets.GH_CACHIX }}
