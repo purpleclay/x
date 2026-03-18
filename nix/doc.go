@@ -11,8 +11,7 @@
 // Nix uses a non-standard base32 encoding with the alphabet
 // "0123456789abcdfghijklmnpqrsvwxyz" (note: e, o, t, u are missing).
 // Additionally, bytes are read in reverse order compared to RFC 4648.
-// The [Base32EncodeToString] and [Base32DecodeString] functions handle
-// this encoding.
+// The [base32] sub-package exposes [base32.StdEncoding] for direct use.
 //
 // [Nix]: https://nixos.org/
 package nix
