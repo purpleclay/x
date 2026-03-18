@@ -56,6 +56,8 @@ func newEncoding() *Encoding {
 }
 
 // EncodedLen returns the length of the base32 encoding of n bytes.
+//
+//	// base32.StdEncoding.EncodedLen(20) == 32
 func (enc *Encoding) EncodedLen(n int) int {
 	if n == 0 {
 		return 0
@@ -65,11 +67,16 @@ func (enc *Encoding) EncodedLen(n int) int {
 
 // DecodedLen returns the maximum length in bytes of the decoded
 // data corresponding to n bytes of nix base32 encoded data.
+//
+//	// base32.StdEncoding.DecodedLen(32) == 20
 func (enc *Encoding) DecodedLen(n int) int {
 	return n * 5 / 8
 }
 
 // EncodeToString returns the nix base32 encoding of src.
+//
+//	src, _ := hex.DecodeString("1f74d74729abdc08f4f84e8f7f8c808c8ed92ee5")
+//	// base32.StdEncoding.EncodeToString(src) == "wlpdk3lch267z3sfz3s0ip5b553xfx0z"
 func (enc *Encoding) EncodeToString(src []byte) string {
 	dst := make([]byte, enc.EncodedLen(len(src)))
 	enc.Encode(dst, src)
@@ -82,6 +89,11 @@ func (enc *Encoding) EncodeToString(src []byte) string {
 // order compared to a naive base32. This matches the Nix C++ reference
 // implementation which iterates from the most significant output
 // position down to 0.
+//
+//	src, _ := hex.DecodeString("1f74d74729abdc08f4f84e8f7f8c808c8ed92ee5")
+//	dst := make([]byte, base32.StdEncoding.EncodedLen(len(src)))
+//	base32.StdEncoding.Encode(dst, src)
+//	// string(dst) == "wlpdk3lch267z3sfz3s0ip5b553xfx0z"
 func (enc *Encoding) Encode(dst, src []byte) {
 	n := len(src)
 	if n == 0 {
@@ -107,6 +119,9 @@ func (enc *Encoding) Encode(dst, src []byte) {
 }
 
 // DecodeString returns the bytes represented by the nix base32 string s.
+//
+//	b, _ := base32.StdEncoding.DecodeString("wlpdk3lch267z3sfz3s0ip5b553xfx0z")
+//	// hex.EncodeToString(b) == "1f74d74729abdc08f4f84e8f7f8c808c8ed92ee5"
 func (enc *Encoding) DecodeString(s string) ([]byte, error) {
 	dst := make([]byte, enc.DecodedLen(len(s)))
 	n, err := enc.Decode(dst, []byte(s))

@@ -1,6 +1,6 @@
 # Nix
 
-Types and functions for for interoperating with the Nix package manager, specifically its binary cache protocol.
+Types and functions for interoperating with the Nix package manager, specifically its binary cache protocol.
 
 ```sh
 go get github.com/purpleclay/x/nix

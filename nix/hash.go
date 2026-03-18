@@ -168,6 +168,9 @@ func (h Hash) Base64() string {
 }
 
 // SRI returns the hash in Subresource Integrity format: "type-base64".
+//
+//	h, _ := nix.ParseHash("sha256:a315ab26a0c4829321730c44a26f4497f7da0631402669caa4e24bdcd9db7c87")
+//	// h.SRI() == "sha256-oxWrJqDEgpMhcwxEom9El/faBjFAJmnKpOJL3NnbfIc="
 func (h Hash) SRI() string {
 	typ := h.typ.String()
 	n := h.typ.Size()
@@ -218,7 +221,15 @@ func (e *ParseHashError) Unwrap() error {
 //   - SRI:             type-base64
 //
 // The encoding is inferred from the length of the encoded part.
-// Parse failures return a [*ParseHashError].
+// Parse failures return a [ParseHashError].
+//
+// All four formats parse to the same value:
+//
+//	hex,   _ := nix.ParseHash("sha256:a315ab26a0c4829321730c44a26f4497f7da0631402669caa4e24bdcd9db7c87")
+//	nix32, _ := nix.ParseHash("sha256:11vwvgcxqjz2lk56j9j0643dmxwp8ips4i0cfchr70n4l0kan5d3")
+//	sri,   _ := nix.ParseHash("sha256-oxWrJqDEgpMhcwxEom9El/faBjFAJmnKpOJL3NnbfIc=")
+//	// hex.Equal(nix32) == true
+//	// nix32.Equal(sri) == true
 func ParseHash(s string) (Hash, error) {
 	parseErr := func(cause error) error {
 		return &ParseHashError{Input: s, Err: cause}
@@ -287,6 +298,11 @@ func ParseHash(s string) (Hash, error) {
 // CompressHash compresses src into dst by cyclic XOR, truncating the hash
 // to len(dst) bytes. It is used during Nix store path derivation to reduce
 // a SHA-256 digest to 20 bytes before encoding as nix base32.
+//
+//	sha256, _ := hex.DecodeString("a315ab26a0c4829321730c44a26f4497f7da0631402669caa4e24bdcd9db7c87")
+//	compressed := make([]byte, 20)
+//	nix.CompressHash(compressed, sha256)
+//	// base32.StdEncoding.EncodeToString(compressed) == "643dmxwp8ips5hvhm3w4zj960knc4cz3"
 func CompressHash(dst, src []byte) {
 	for i := range dst {
 		dst[i] = 0
