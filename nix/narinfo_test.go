@@ -10,23 +10,27 @@ import (
 
 // Real hello-2.12.1 narinfo values from cache.nixos.org.
 const (
+	// testFakeSigB64 is a valid base64 encoding of 64 zero bytes used only
+	// to test signature parsing mechanics, not cryptographic validity.
+	testFakeSigB64 = "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+
 	testNARStorePath = "/nix/store/s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1"
-	testNARURL       = "nar/0vgdasb2zswyxqb2g6q3rabg1rj9ijj21gzgwvkz8bbyb5nji7mk.nar.zst"
-	testNARFileHash  = "sha256-xHkGMFLJnBymOQoG6VHjKH/2/wRVNBRg3PUOyBmsMtY="
-	testNARNARHash   = "sha256-Dz+UMEzSkFv+Ao5JxWBjyOBnJpokBxCPqJfGjHt+CBg="
-	testNARDeriver   = "11cldfnpspd2a1rqihf7xhsjfb0bwj7m-hello-2.12.1.drv"
-	testNARSig       = "cache.nixos.org-1:sDcIalq8XS+YQKtGsDi+WlTXk59tMwPkBrgT/LNqJqXEIBMG4AXaYOnaB5dmAerq10TRShEz2C+ynvvL2sINCA=="
+	testNARURL       = "nar/1nhgq6wcggx0plpy4991h3ginj6hipsdslv4fd4zml1n707j26yq.nar.xz"
+	testNARFileHash  = "sha256:1nhgq6wcggx0plpy4991h3ginj6hipsdslv4fd4zml1n707j26yq"
+	testNARNARHash   = "sha256:0yzhigwjl6bws649vcs2asa4lbs8hg93hyix187gc7s7a74w5h80"
+	testNARDeriver   = "ib3sh3pcz10wsmavxvkdbayhqivbghlq-hello-2.12.1.drv"
+	testNARSig       = "cache.nixos.org-1:8ijECciSFzWHwwGVOIVYdp2fOIOJAfmzGHPQVwpktfTQJF6kMPPDre7UtFw3o+VqenC5P8RikKOAAfN7CvPEAg=="
 
 	testNARInfoText = "StorePath: /nix/store/s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1\n" +
-		"URL: nar/0vgdasb2zswyxqb2g6q3rabg1rj9ijj21gzgwvkz8bbyb5nji7mk.nar.zst\n" +
-		"Compression: zstd\n" +
-		"FileHash: sha256-xHkGMFLJnBymOQoG6VHjKH/2/wRVNBRg3PUOyBmsMtY=\n" +
-		"FileSize: 30752\n" +
-		"NARHash: sha256-Dz+UMEzSkFv+Ao5JxWBjyOBnJpokBxCPqJfGjHt+CBg=\n" +
-		"NARSize: 54416\n" +
-		"References: s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1 aasvr6g9965bh3df9wgvmjmmapds7b18-glibc-2.40-36\n" +
-		"Deriver: 11cldfnpspd2a1rqihf7xhsjfb0bwj7m-hello-2.12.1.drv\n" +
-		"Sig: cache.nixos.org-1:sDcIalq8XS+YQKtGsDi+WlTXk59tMwPkBrgT/LNqJqXEIBMG4AXaYOnaB5dmAerq10TRShEz2C+ynvvL2sINCA==\n"
+		"URL: nar/1nhgq6wcggx0plpy4991h3ginj6hipsdslv4fd4zml1n707j26yq.nar.xz\n" +
+		"Compression: xz\n" +
+		"FileHash: sha256:1nhgq6wcggx0plpy4991h3ginj6hipsdslv4fd4zml1n707j26yq\n" +
+		"FileSize: 50088\n" +
+		"NarHash: sha256:0yzhigwjl6bws649vcs2asa4lbs8hg93hyix187gc7s7a74w5h80\n" +
+		"NarSize: 226488\n" +
+		"References: 3n58xw4373jp0ljirf06d8077j15pc4j-glibc-2.37-8 s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1\n" +
+		"Deriver: ib3sh3pcz10wsmavxvkdbayhqivbghlq-hello-2.12.1.drv\n" +
+		"Sig: cache.nixos.org-1:8ijECciSFzWHwwGVOIVYdp2fOIOJAfmzGHPQVwpktfTQJF6kMPPDre7UtFw3o+VqenC5P8RikKOAAfN7CvPEAg==\n"
 )
 
 func TestNARInfoName(t *testing.T) {
@@ -90,20 +94,23 @@ func TestNARInfoMarshalText(t *testing.T) {
 	narHash, err := nix.ParseHash(testNARNARHash)
 	require.NoError(t, err)
 
+	sig, err := nix.ParseSignature(testNARSig)
+	require.NoError(t, err)
+
 	ni := nix.NARInfo{
 		StorePath:   sp,
 		URL:         testNARURL,
-		Compression: nix.Zstd,
+		Compression: nix.XZ,
 		FileHash:    fileHash,
-		FileSize:    30752,
+		FileSize:    50088,
 		NARHash:     narHash,
-		NARSize:     54416,
+		NARSize:     226488,
 		References: []string{
+			"3n58xw4373jp0ljirf06d8077j15pc4j-glibc-2.37-8",
 			"s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1",
-			"aasvr6g9965bh3df9wgvmjmmapds7b18-glibc-2.40-36",
 		},
 		Deriver: testNARDeriver,
-		Sig:     []string{testNARSig},
+		Sig:     []*nix.Signature{sig},
 	}
 
 	text, err := ni.MarshalText()
@@ -137,21 +144,22 @@ func TestNARInfoUnmarshalText(t *testing.T) {
 
 	assert.Equal(t, nix.StorePath(testNARStorePath), ni.StorePath)
 	assert.Equal(t, testNARURL, ni.URL)
-	assert.Equal(t, nix.Zstd, ni.Compression)
-	assert.Equal(t, int64(30752), ni.FileSize)
-	assert.Equal(t, int64(54416), ni.NARSize)
+	assert.Equal(t, nix.XZ, ni.Compression)
+	assert.Equal(t, int64(50088), ni.FileSize)
+	assert.Equal(t, int64(226488), ni.NARSize)
 	assert.Equal(t, []string{
+		"3n58xw4373jp0ljirf06d8077j15pc4j-glibc-2.37-8",
 		"s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1",
-		"aasvr6g9965bh3df9wgvmjmmapds7b18-glibc-2.40-36",
 	}, ni.References)
 	assert.Equal(t, testNARDeriver, ni.Deriver)
-	assert.Equal(t, []string{testNARSig}, ni.Sig)
+	require.Len(t, ni.Sig, 1)
+	assert.Equal(t, testNARSig, ni.Sig[0].String())
 }
 
 func TestNARInfoUnmarshalTextDefaultCompression(t *testing.T) {
 	input := "StorePath: " + testNARStorePath + "\n" +
 		"URL: " + testNARURL + "\n" +
-		"NARSize: 54416\n"
+		"NarSize: 226488\n"
 
 	var ni nix.NARInfo
 	require.NoError(t, ni.UnmarshalText([]byte(input)))
@@ -169,22 +177,24 @@ func TestNARInfoUnmarshalTextEmptyReferences(t *testing.T) {
 
 func TestNARInfoUnmarshalTextMultipleSigs(t *testing.T) {
 	input := "StorePath: " + testNARStorePath + "\n" +
-		"Sig: cache.nixos.org-1:abc123==\n" +
-		"Sig: mycache-1:xyz789==\n"
+		"Sig: cache.nixos.org-1:" + testFakeSigB64 + "\n" +
+		"Sig: mycache-1:" + testFakeSigB64 + "\n"
 
 	var ni nix.NARInfo
 	require.NoError(t, ni.UnmarshalText([]byte(input)))
-	assert.Equal(t, []string{"cache.nixos.org-1:abc123==", "mycache-1:xyz789=="}, ni.Sig)
+	require.Len(t, ni.Sig, 2)
+	assert.Equal(t, "cache.nixos.org-1", ni.Sig[0].Name())
+	assert.Equal(t, "mycache-1", ni.Sig[1].Name())
 }
 
 func TestNARInfoUnknownKeysIgnored(t *testing.T) {
 	input := "StorePath: " + testNARStorePath + "\n" +
 		"UnknownField: somevalue\n" +
-		"NARSize: 54416\n"
+		"NarSize: 226488\n"
 
 	var ni nix.NARInfo
 	require.NoError(t, ni.UnmarshalText([]byte(input)))
-	assert.Equal(t, int64(54416), ni.NARSize)
+	assert.Equal(t, int64(226488), ni.NARSize)
 }
 
 func TestNARInfoUnmarshalTextError(t *testing.T) {
@@ -196,13 +206,56 @@ func TestNARInfoUnmarshalTextError(t *testing.T) {
 		{"InvalidCompression", "StorePath: " + testNARStorePath + "\nCompression: lz4\n"},
 		{"InvalidFileHash", "StorePath: " + testNARStorePath + "\nFileHash: notahash\n"},
 		{"InvalidFileSize", "StorePath: " + testNARStorePath + "\nFileSize: big\n"},
-		{"InvalidNARHash", "StorePath: " + testNARStorePath + "\nNARHash: notahash\n"},
-		{"InvalidNARSize", "StorePath: " + testNARStorePath + "\nNARSize: big\n"},
+		{"InvalidNarHash", "StorePath: " + testNARStorePath + "\nNarHash: notahash\n"},
+		{"InvalidNarSize", "StorePath: " + testNARStorePath + "\nNarSize: big\n"},
+		{"InvalidSig", "StorePath: " + testNARStorePath + "\nSig: cache.nixos.org-1:notbase64!!\n"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var ni nix.NARInfo
 			require.Error(t, ni.UnmarshalText([]byte(tt.input)))
 		})
+	}
+}
+
+func TestNARInfoAddSignatures(t *testing.T) {
+	sig1, err := nix.ParseSignature("cache.nixos.org-1:" + testFakeSigB64)
+	require.NoError(t, err)
+
+	sig2, err := nix.ParseSignature("mycache-1:" + testFakeSigB64)
+	require.NoError(t, err)
+
+	var ni nix.NARInfo
+
+	// Add two distinct signatures.
+	ni.AddSignatures(sig1, sig2)
+	require.Len(t, ni.Sig, 2)
+
+	// Adding the same key name again is a no-op.
+	ni.AddSignatures(sig1)
+	assert.Len(t, ni.Sig, 2)
+
+	// Nil signatures are ignored.
+	ni.AddSignatures(nil)
+	assert.Len(t, ni.Sig, 2)
+}
+
+func BenchmarkNARInfoMarshalText(b *testing.B) {
+	var ni nix.NARInfo
+	if err := ni.UnmarshalText([]byte(testNARInfoText)); err != nil {
+		b.Fatal(err)
+	}
+
+	for b.Loop() {
+		ni.MarshalText()
+	}
+}
+
+func BenchmarkNARInfoUnmarshalText(b *testing.B) {
+	text := []byte(testNARInfoText)
+
+	for b.Loop() {
+		var ni nix.NARInfo
+		ni.UnmarshalText(text)
 	}
 }

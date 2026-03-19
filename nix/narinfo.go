@@ -2,6 +2,8 @@ package nix
 
 import (
 	"fmt"
+	"io"
+	"sort"
 	"strconv"
 	"strings"
 )
@@ -101,9 +103,9 @@ func ParseCompression(s string) (Compression, error) {
 //
 //	ni := nix.NARInfo{
 //		StorePath:   "/nix/store/s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1",
-//		URL:         "nar/0vgdasb2zswyxqb2g6q3rabg1rj9ijj21gzgwvkz8bbyb5nji7mk.nar.zst",
-//		Compression: nix.Zstd,
-//		NARSize:     54416,
+//		URL:         "nar/1nhgq6wcggx0plpy4991h3ginj6hipsdslv4fd4zml1n707j26yq.nar.xz",
+//		Compression: nix.XZ,
+//		NARSize:     226488,
 //	}
 type NARInfo struct {
 	// StorePath is the full Nix store path of the object.
@@ -136,9 +138,9 @@ type NARInfo struct {
 	// Empty if not recorded in the narinfo.
 	Deriver string
 
-	// Sig holds the raw "name:base64" signatures attached to this narinfo.
-	// Multiple signatures may be present.
-	Sig []string
+	// Sig holds the Ed25519 signatures attached to this narinfo.
+	// Multiple signatures may be present from different trusted keys.
+	Sig []*Signature
 }
 
 // MarshalText implements [encoding.TextMarshaler]. It serialises NARInfo in
@@ -148,12 +150,12 @@ type NARInfo struct {
 //
 //	ni := nix.NARInfo{
 //		StorePath:   "/nix/store/s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1",
-//		URL:         "nar/0vgdasb2zswyxqb2g6q3rabg1rj9ijj21gzgwvkz8bbyb5nji7mk.nar.zst",
-//		Compression: nix.Zstd,
-//		NARSize:     54416,
+//		URL:         "nar/1nhgq6wcggx0plpy4991h3ginj6hipsdslv4fd4zml1n707j26yq.nar.xz",
+//		Compression: nix.XZ,
+//		NARSize:     226488,
 //	}
 //	text, _ := ni.MarshalText()
-//	// "StorePath: /nix/store/s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1\nURL: nar/...nar.zst\n..."
+//	// "StorePath: /nix/store/s66mzxpvicwk07gjbjfw9izjfa797vsw-hello-2.12.1\nURL: nar/...nar.xz\n..."
 func (n NARInfo) MarshalText() ([]byte, error) {
 	compression := n.Compression
 	if compression == 0 {
@@ -163,10 +165,10 @@ func (n NARInfo) MarshalText() ([]byte, error) {
 	b = fmt.Appendf(b, "StorePath: %s\n", n.StorePath)
 	b = fmt.Appendf(b, "URL: %s\n", n.URL)
 	b = fmt.Appendf(b, "Compression: %s\n", compression)
-	b = fmt.Appendf(b, "FileHash: %s\n", n.FileHash.SRI())
+	b = fmt.Appendf(b, "FileHash: %s\n", n.FileHash.Base32())
 	b = fmt.Appendf(b, "FileSize: %d\n", n.FileSize)
-	b = fmt.Appendf(b, "NARHash: %s\n", n.NARHash.SRI())
-	b = fmt.Appendf(b, "NARSize: %d\n", n.NARSize)
+	b = fmt.Appendf(b, "NarHash: %s\n", n.NARHash.Base32())
+	b = fmt.Appendf(b, "NarSize: %d\n", n.NARSize)
 	b = fmt.Appendf(b, "References: %s\n", strings.Join(n.References, " "))
 	if n.Deriver != "" {
 		b = fmt.Appendf(b, "Deriver: %s\n", n.Deriver)
@@ -222,16 +224,16 @@ func (n *NARInfo) UnmarshalText(text []byte) error {
 				return fmt.Errorf("nix: NARInfo: invalid FileSize %q", value)
 			}
 			n.FileSize = sz
-		case "NARHash":
+		case "NarHash":
 			h, err := ParseHash(value)
 			if err != nil {
-				return fmt.Errorf("nix: NARInfo: invalid NARHash: %w", err)
+				return fmt.Errorf("nix: NARInfo: invalid NarHash: %w", err)
 			}
 			n.NARHash = h
-		case "NARSize":
+		case "NarSize":
 			sz, err := strconv.ParseInt(value, 10, 64)
 			if err != nil {
-				return fmt.Errorf("nix: NARInfo: invalid NARSize %q", value)
+				return fmt.Errorf("nix: NARInfo: invalid NarSize %q", value)
 			}
 			n.NARSize = sz
 		case "References":
@@ -239,11 +241,70 @@ func (n *NARInfo) UnmarshalText(text []byte) error {
 		case "Deriver":
 			n.Deriver = value
 		case "Sig":
-			n.Sig = append(n.Sig, value)
+			sig, err := ParseSignature(value)
+			if err != nil {
+				return fmt.Errorf("nix: NARInfo: invalid Sig: %w", err)
+			}
+			n.Sig = append(n.Sig, sig)
 		}
 	}
 	if n.Compression == 0 {
 		n.Compression = Bzip2
 	}
 	return nil
+}
+
+// WriteFingerprint writes the canonical Nix NAR signing fingerprint to w.
+// The fingerprint has the form:
+//
+//	1;<store-path>;<nar-hash-nix32>;<nar-size>;<sorted-refs>
+//
+// where <sorted-refs> is a comma-separated list of full store paths sorted
+// lexicographically. This is the message that [SignNARInfo] signs and
+// [VerifyNARInfo] verifies.
+//
+// See the Nix C++ reference implementation:
+// https://github.com/NixOS/nix/blob/master/src/libstore/nar-info.cc
+func (n NARInfo) WriteFingerprint(w io.Writer) error {
+	storeDir := n.StorePath.Dir()
+	refs := make([]string, len(n.References))
+	for i, r := range n.References {
+		refs[i] = storeDir.Join(r)
+	}
+	sort.Strings(refs)
+	_, err := fmt.Fprintf(w, "1;%s;%s;%d;%s",
+		n.StorePath,
+		n.NARHash.Base32(),
+		n.NARSize,
+		strings.Join(refs, ","),
+	)
+	return err
+}
+
+// Fingerprint returns the canonical Nix NAR signing fingerprint as a string.
+// It is a convenience wrapper around [NARInfo.WriteFingerprint].
+func (n NARInfo) Fingerprint() string {
+	var b strings.Builder
+	_ = n.WriteFingerprint(&b)
+	return b.String()
+}
+
+// AddSignatures appends each sig to n.Sig, skipping any whose key name is
+// already present (deduplication by key name). Nil signatures are ignored.
+func (n *NARInfo) AddSignatures(sigs ...*Signature) {
+	existing := make(map[string]struct{}, len(n.Sig))
+	for _, s := range n.Sig {
+		if s != nil {
+			existing[s.Name()] = struct{}{}
+		}
+	}
+	for _, s := range sigs {
+		if s == nil {
+			continue
+		}
+		if _, ok := existing[s.Name()]; !ok {
+			n.Sig = append(n.Sig, s)
+			existing[s.Name()] = struct{}{}
+		}
+	}
 }
