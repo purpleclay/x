@@ -38,6 +38,22 @@ go test -fuzz=FuzzEncodeDecodeRoundTrip -fuzztime=60s
 Any input that triggers a failure is automatically saved to
 `testdata/fuzz/<FuzzName>/` and replayed on every subsequent `go test` run.
 
+## Property tests
+
+Property tests verify invariants across randomly generated valid inputs (round-trips,
+sign/verify consistency). Run them like ordinary tests:
+
+```sh
+go test -run=TestProp ./...
+```
+
+The number of random cases per property defaults to 100. Increase it locally for
+more thorough checking:
+
+```sh
+go test -run=TestProp -rapid.checks=1000 ./...
+```
+
 ## Benchmarks
 
 Benchmarks are run on an Apple M4 Pro (darwin/arm64) using Go's built-in testing framework.

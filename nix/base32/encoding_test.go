@@ -1,7 +1,6 @@
 package base32_test
 
 import (
-	"bytes"
 	"encoding/hex"
 	"testing"
 
@@ -168,11 +167,7 @@ func FuzzEncodeDecodeRoundTrip(f *testing.F) {
 	f.Fuzz(func(t *testing.T, raw []byte) {
 		encoded := base32.StdEncoding.EncodeToString(raw)
 		decoded, err := base32.StdEncoding.DecodeString(encoded)
-		if err != nil {
-			t.Fatalf("DecodeString of encoded output failed: %v", err)
-		}
-		if !bytes.Equal(raw, decoded) {
-			t.Fatalf("round-trip mismatch: got %x, want %x", decoded, raw)
-		}
+		require.NoError(t, err, "DecodeString of encoded output")
+		require.Equal(t, raw, decoded)
 	})
 }
