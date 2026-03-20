@@ -329,3 +329,19 @@ func BenchmarkCompressHash(b *testing.B) {
 		nix.CompressHash(dst, raw)
 	}
 }
+
+func FuzzParseHash(f *testing.F) {
+	// One valid nix32 seed per hash type.
+	f.Add("sha256:11vwvgcxqjz2lk56j9j0643dmxwp8ips4i0cfchr70n4l0kan5d3")
+	f.Add("sha256:a315ab26a0c4829321730c44a26f4497f7da0631402669caa4e24bdcd9db7c87")
+	// SRI format (sha256 only in practice).
+	f.Add("sha256-oxWrJqDEgpMhcwxEom9El/faBjFAJmnKpOJL3NnbfIc=")
+	// Shorter hash types — exercises the length-dispatch in ParseHash.
+	f.Add("sha1:wlpdk3lch267z3sfz3s0ip5b553xfx0z")
+	f.Add("md5:0gvvikzi2b0hb83m62c3rdicj7")
+	f.Add("sha512:2mlsdb49j084azv7nwinwcs6lzimg5i2fmfn3yxxh2p6k995g3lzdhlwls15clsywgnjqaq95zagdwa8s14biwy56pr06ayz9dl8si9")
+
+	f.Fuzz(func(_ *testing.T, s string) {
+		nix.ParseHash(s)
+	})
+}

@@ -140,3 +140,10 @@ func BenchmarkVerifyNARInfo(b *testing.B) {
 		nix.VerifyNARInfo(trusted, &ni, sig)
 	}
 }
+
+func FuzzParseSignature(f *testing.F) {
+	f.Add(testNARSig)
+	f.Fuzz(func(_ *testing.T, s string) {
+		nix.ParseSignature(s)
+	})
+}

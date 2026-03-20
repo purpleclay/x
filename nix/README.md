@@ -6,6 +6,38 @@ Types and functions for interoperating with the Nix package manager, specificall
 go get github.com/purpleclay/x/nix
 ```
 
+## Fuzz tests
+
+Fuzz tests verify that parsers never panic on arbitrary input. Each target ships
+a seed corpus of real inputs; running without `-fuzz` replays the corpus only
+(fast, suitable for CI):
+
+```sh
+go test -run=FuzzParseHash ./...
+```
+
+To run the full fuzzer locally, pass `-fuzz` and a time limit:
+
+```sh
+go test -fuzz=FuzzParseHash        -fuzztime=60s
+go test -fuzz=FuzzNARInfoUnmarshalText -fuzztime=60s
+go test -fuzz=FuzzParseStorePath   -fuzztime=60s
+go test -fuzz=FuzzParsePublicKey   -fuzztime=60s
+go test -fuzz=FuzzParseSignature   -fuzztime=60s
+```
+
+The `base32` sub-package has two additional targets — one for panic safety and
+one that checks the encode→decode round-trip property for all byte inputs:
+
+```sh
+cd base32
+go test -fuzz=FuzzDecode                -fuzztime=60s
+go test -fuzz=FuzzEncodeDecodeRoundTrip -fuzztime=60s
+```
+
+Any input that triggers a failure is automatically saved to
+`testdata/fuzz/<FuzzName>/` and replayed on every subsequent `go test` run.
+
 ## Benchmarks
 
 Benchmarks are run on an Apple M4 Pro (darwin/arm64) using Go's built-in testing framework.

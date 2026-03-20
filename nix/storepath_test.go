@@ -138,3 +138,11 @@ func TestStorePathTextMarshaler(t *testing.T) {
 	require.NoError(t, restored.UnmarshalText(text))
 	assert.Equal(t, original, restored)
 }
+
+func FuzzParseStorePath(f *testing.F) {
+	f.Add(testStorePath)
+	f.Add(testDrvPath)
+	f.Fuzz(func(_ *testing.T, s string) {
+		nix.ParseStorePath(s)
+	})
+}

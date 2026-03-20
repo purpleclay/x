@@ -103,3 +103,11 @@ func TestKeyRoundTrip(t *testing.T) {
 	require.NoError(t, restoredPriv.UnmarshalText(privText))
 	assert.Equal(t, priv.String(), restoredPriv.String())
 }
+
+func FuzzParsePublicKey(f *testing.F) {
+	// Real cache.nixos.org-1 public key.
+	f.Add("cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=")
+	f.Fuzz(func(_ *testing.T, s string) {
+		nix.ParsePublicKey(s) // must not panic; errors are acceptable
+	})
+}
