@@ -1,6 +1,7 @@
 package base32_test
 
 import (
+	"bytes"
 	"encoding/hex"
 	"testing"
 
@@ -148,4 +149,30 @@ func BenchmarkDecode(b *testing.B) {
 	for b.Loop() {
 		base32.StdEncoding.Decode(dst, src)
 	}
+}
+
+func FuzzDecode(f *testing.F) {
+	for _, tt := range vectors {
+		f.Add(tt.base32)
+	}
+	f.Fuzz(func(_ *testing.T, s string) {
+		base32.StdEncoding.DecodeString(s)
+	})
+}
+
+func FuzzEncodeDecodeRoundTrip(f *testing.F) {
+	for _, tt := range vectors {
+		raw, _ := hex.DecodeString(tt.hex)
+		f.Add(raw)
+	}
+	f.Fuzz(func(t *testing.T, raw []byte) {
+		encoded := base32.StdEncoding.EncodeToString(raw)
+		decoded, err := base32.StdEncoding.DecodeString(encoded)
+		if err != nil {
+			t.Fatalf("DecodeString of encoded output failed: %v", err)
+		}
+		if !bytes.Equal(raw, decoded) {
+			t.Fatalf("round-trip mismatch: got %x, want %x", decoded, raw)
+		}
+	})
 }

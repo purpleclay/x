@@ -239,15 +239,21 @@ func ParseHash(s string) (Hash, error) {
 		return Hash{}, parseErr(errors.New("empty string"))
 	}
 
-	// stack-allocated decode buffer, sized for SHA-512
-	var buf [64]byte
+	// stack-allocated decode buffer. Sized to base64.DecodedLen(base64.EncodedLen(64)) = 66
+	// so that decoding a SHA-512 base64 value without trailing padding does not overflow.
+	var buf [96]byte
 
 	// SRI format uses a hyphen separator: type-base64.
 	// Hash type names never contain a hyphen, so the first hyphen is the separator.
 	if idx := strings.Index(s, "-"); idx > 0 {
 		typ, err := ParseHashType(s[:idx])
 		if err == nil {
-			n, err := base64.StdEncoding.Decode(buf[:], []byte(s[idx+1:]))
+			b64 := s[idx+1:]
+			// Guard against arbitrarily long inputs before decoding into the fixed buffer.
+			if len(b64) != base64.StdEncoding.EncodedLen(typ.Size()) {
+				return Hash{}, parseErr(fmt.Errorf("%s SRI requires %d base64 chars, got %d", typ, base64.StdEncoding.EncodedLen(typ.Size()), len(b64)))
+			}
+			n, err := base64.StdEncoding.Decode(buf[:], []byte(b64))
 			if err != nil {
 				return Hash{}, parseErr(fmt.Errorf("invalid base64: %w", err))
 			}
@@ -288,6 +294,9 @@ func ParseHash(s string) (Hash, error) {
 		n, err := base64.StdEncoding.Decode(buf[:], []byte(after))
 		if err != nil {
 			return Hash{}, parseErr(fmt.Errorf("invalid base64: %w", err))
+		}
+		if n != size {
+			return Hash{}, parseErr(fmt.Errorf("invalid base64: decoded %d bytes, want %d", n, size))
 		}
 		return NewHash(typ, buf[:n]), nil
 	default:

@@ -259,3 +259,14 @@ func BenchmarkNARInfoUnmarshalText(b *testing.B) {
 		ni.UnmarshalText(text)
 	}
 }
+
+func FuzzNARInfoUnmarshalText(f *testing.F) {
+	// Seed with a structurally valid narinfo so the fuzzer begins from a
+	// meaningful input and mutates toward edge cases (truncation, bad field
+	// names, malformed hash strings, etc.).
+	f.Add(testNARInfoText)
+	f.Fuzz(func(_ *testing.T, s string) {
+		var ni nix.NARInfo
+		ni.UnmarshalText([]byte(s))
+	})
+}
