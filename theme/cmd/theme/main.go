@@ -93,9 +93,18 @@ func typography() string {
 		theme.Italic.Render("Italic")+"  ",
 		theme.Underline.Render("Underline")+"  ",
 		theme.Strikethrough.Render("Strikethrough")+"  ",
+		theme.Faint.Render("Faint")+"  ",
 		theme.Code.Render("Code")+"  ",
 		theme.Mark.Render("Mark")+"  ",
 		theme.Link.Render("Link"),
+	)
+
+	glyphs := lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		theme.Tick+" Tick"+"  ",
+		theme.Cross+" Cross"+"  ",
+		theme.Bang+" Bang"+"  ",
+		theme.Circle+" Circle",
 	)
 
 	return lipgloss.JoinVertical(
@@ -105,5 +114,7 @@ func typography() string {
 		headers,
 		"",
 		styles,
+		"",
+		glyphs,
 	)
 }

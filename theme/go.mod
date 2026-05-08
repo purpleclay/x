@@ -4,11 +4,11 @@ go 1.25.0
 
 require (
 	charm.land/lipgloss/v2 v2.0.3
-	github.com/purpleclay/x/cli v0.7.1
+	github.com/purpleclay/x/cli v0.7.2
 )
 
 require (
-	github.com/carapace-sh/carapace v1.11.2 // indirect
+	github.com/carapace-sh/carapace v1.11.4 // indirect
 	github.com/carapace-sh/carapace-shlex v1.1.1 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20251205161215-1948445e3318 // indirect

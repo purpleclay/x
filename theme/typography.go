@@ -63,6 +63,9 @@ var (
 	// Strikethrough renders text with a strikethrough.
 	Strikethrough = lipgloss.NewStyle().Strikethrough(true)
 
+	// Faint renders text in a dimmed style, suitable for secondary information.
+	Faint = lipgloss.NewStyle().Faint(true)
+
 	// Code renders inline code with a distinct style.
 	Code = lipgloss.NewStyle().
 		Foreground(compat.AdaptiveColor{
@@ -89,4 +92,22 @@ var (
 			Light: Purple400,
 			Dark:  Purple100,
 		})
+)
+
+// Glyph styles for common status indicators. Each is a pre-rendered string
+// ready for direct use in output. ANSI colors are used intentionally so the
+// terminal theme controls the exact shade, ensuring glyphs are readable on
+// both light and dark backgrounds without explicit adaptation.
+var (
+	// Tick renders a ✓ glyph styled for success or completion.
+	Tick = lipgloss.NewStyle().Foreground(Green).Render("✓")
+
+	// Cross renders a ✕ glyph styled for failure or error.
+	Cross = lipgloss.NewStyle().Foreground(Red).Render("✕")
+
+	// Bang renders a ! glyph styled for warnings.
+	Bang = lipgloss.NewStyle().Foreground(Yellow).Render("!")
+
+	// Circle renders a ○ glyph styled for skipped or neutral states.
+	Circle = lipgloss.NewStyle().Foreground(Cyan).Render("○")
 )
