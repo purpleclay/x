@@ -27,6 +27,27 @@ func TestBindEnv(t *testing.T) {
 	assert.Equal(t, "from-env", val)
 }
 
+func TestBindEnvMarksFlagAsChanged(t *testing.T) {
+	t.Setenv("TEST_KEY", "from-env")
+
+	var buf bytes.Buffer
+	var val string
+	var flagChanged bool
+
+	cmd := &cobra.Command{
+		Use: "test",
+		Run: func(cmd *cobra.Command, _ []string) {
+			flagChanged = cmd.Flags().Lookup("key").Changed
+		},
+	}
+	cmd.Flags().StringVar(&val, "key", "default", "test flag")
+	BindEnv(cmd.Flags().Lookup("key"), "TEST_KEY")
+
+	err := Execute(cmd, WithStdout(&buf))
+	require.NoError(t, err)
+	assert.True(t, flagChanged)
+}
+
 func TestBindEnvExplicitFlagOverrides(t *testing.T) {
 	t.Setenv("TEST_KEY", "from-env")
 

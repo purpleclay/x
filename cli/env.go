@@ -86,6 +86,7 @@ func applyEnvToFlag(flag *pflag.Flag) error {
 	if err := flag.Value.Set(val); err != nil {
 		return fmt.Errorf("invalid value for --%s from environment variable %s: %w", flag.Name, envVar, err)
 	}
+	flag.Changed = true
 
 	return nil
 }
