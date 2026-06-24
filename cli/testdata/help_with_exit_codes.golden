@@ -1,0 +1,16 @@
+Deploy an application to the cloud
+
+USAGE
+
+  deploy [FLAGS]
+
+FLAGS
+
+  -h, --help
+          help for deploy
+
+EXIT CODES
+
+  0  success
+  1  drift detected
+  2  error

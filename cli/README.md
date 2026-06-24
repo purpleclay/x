@@ -13,6 +13,7 @@ go get github.com/purpleclay/x/cli
 - **Environment Variable Binding**: associate env vars with flags using cobra annotations, values are displayed in help if set
 - **Flag Grouping**: organize related flags into named sections
 - **Enum Flags**: type-safe enums with optional help text for each value
+- **Exit Codes**: document a command's exit codes in a dedicated help section
 - **Version Flag**: automatic `--version` flag and `version` subcommand support
 - **Shell Completion**: enhanced completions for 11 shells powered by [carapace](https://github.com/carapace-sh/carapace)
 
@@ -23,9 +24,11 @@ Deploy your application to the cloud with configurable options for environment,
 replicas, and resource limits.
 
 USAGE
+
   demo deploy [FLAGS]
 
 EXAMPLES
+
   # Deploy to staging with defaults
   demo deploy --env staging
 
@@ -33,6 +36,7 @@ EXAMPLES
   demo deploy --env production --replicas 5
 
 FLAGS
+
   -e, --env <string>
           target environment (default: "staging")
 
@@ -52,10 +56,18 @@ FLAGS
           - error: Errors only
 
 AUTHENTICATION
+
       --url <string>
           API endpoint URL
 
 GLOBAL FLAGS
+
   -c, --config <string>  [env: DEMO_CONFIG]
           path to config file
+
+EXIT CODES
+
+  0  success
+  1  drift detected
+  2  error
 ```

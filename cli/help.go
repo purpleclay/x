@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"charm.land/lipgloss/v2"
@@ -60,6 +61,19 @@ func renderHelp(w io.Writer, cmd *cobra.Command, theme Theme, width int) {
 		fmt.Fprintln(w, theme.Header.Render("GLOBAL FLAGS"))
 		fmt.Fprintln(w)
 		renderFlags(w, cmd.InheritedFlags(), theme, width)
+	}
+
+	if codes := getExitCodes(cmd); len(codes) > 0 {
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, theme.Header.Render("EXIT CODES"))
+		fmt.Fprintln(w)
+		renderExitCodes(w, codes, theme)
+	}
+}
+
+func renderExitCodes(w io.Writer, codes []ExitCode, theme Theme) {
+	for _, c := range codes {
+		fmt.Fprintf(w, "  %s  %s\n", theme.FlagType.Render(strconv.Itoa(c.Code)), theme.Description.Render(c.Desc))
 	}
 }
 
