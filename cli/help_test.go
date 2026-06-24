@@ -184,6 +184,29 @@ func TestHelpWithFlagGroups(t *testing.T) {
 	golden.Assert(t, buf.String(), "help_with_flag_groups.golden")
 }
 
+func TestHelpWithExitCodes(t *testing.T) {
+	var buf bytes.Buffer
+
+	cmd := &cobra.Command{
+		Use:   "deploy",
+		Short: "Deploy an application to the cloud",
+		Run:   func(_ *cobra.Command, _ []string) {},
+	}
+
+	ExitCodes(cmd,
+		ExitCode{Code: 0, Desc: "success"},
+		ExitCode{Code: 1, Desc: "drift detected"},
+		ExitCode{Code: 2, Desc: "error"},
+	)
+
+	cmd.SetArgs([]string{"--help"})
+
+	err := Execute(cmd, WithStdout(&buf))
+	require.NoError(t, err)
+
+	golden.Assert(t, buf.String(), "help_with_exit_codes.golden")
+}
+
 func TestHelpWithEnum(t *testing.T) {
 	var buf bytes.Buffer
 
