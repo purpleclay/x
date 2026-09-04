@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	charm.land/lipgloss/v2 v2.0.4
-	github.com/carapace-sh/carapace v1.12.1
+	github.com/carapace-sh/carapace v1.16.1
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/roff v0.1.0
