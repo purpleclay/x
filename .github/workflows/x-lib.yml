@@ -13,7 +13,7 @@ on:
 
 jobs:
   golangci-lint:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     if: github.actor != 'renovate[bot]'
     name: golangci-lint
     steps:
@@ -31,7 +31,7 @@ jobs:
         run: nix develop "$GITHUB_WORKSPACE" -c golangci-lint run
 
   test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: test
     steps:
       - name: Checkout
@@ -48,7 +48,7 @@ jobs:
         run: nix develop "$GITHUB_WORKSPACE" -c go test -shuffle=on -race -vet=off ./...
 
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     name: build
     steps:
       - name: Checkout
