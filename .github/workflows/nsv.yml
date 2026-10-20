@@ -27,7 +27,7 @@ jobs:
           cachix-token: ${{ secrets.GH_CACHIX }}
 
       - name: GPG Import
-        uses: purpleclay/gpg-import-action@a39506c3eff9b02459e033e3551e556934f266fc # v0
+        uses: purpleclay/gpg-import-action@43fb976a9a0b0292ab3694121586aa57741f5255 # v0
         with:
           key: ${{ secrets.GPG_PRIVATE_KEY }}
           passphrase: ${{ secrets.GPG_PASSPHRASE }}
