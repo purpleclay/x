@@ -4,18 +4,18 @@ go 1.25.0
 
 require (
 	charm.land/lipgloss/v2 v2.0.4
-	github.com/carapace-sh/carapace v1.12.1
+	github.com/carapace-sh/carapace v1.18.2
 	github.com/muesli/mango-cobra v1.3.0
 	github.com/muesli/reflow v0.3.0
 	github.com/muesli/roff v0.1.0
 	github.com/spf13/cobra v1.10.2
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	github.com/stretchr/testify v1.11.1
 	gotest.tools/v3 v3.5.2
 )
 
 require (
-	github.com/carapace-sh/carapace-shlex v1.1.1 // indirect
+	github.com/carapace-sh/carapace-shlex/v2 v2.1.4 // indirect
 	github.com/charmbracelet/colorprofile v0.4.3 // indirect
 	github.com/charmbracelet/ultraviolet v0.0.0-20251205161215-1948445e3318 // indirect
 	github.com/charmbracelet/x/ansi v0.11.7 // indirect
@@ -35,6 +35,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
+	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.45.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
